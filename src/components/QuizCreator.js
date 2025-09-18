@@ -108,6 +108,7 @@ export class QuizCreator {
                                     <button id="generate-from-pdf" class="btn btn-primary ai-generate-btn">
                                         <span class="btn-icon">📄</span>
                                         Generate from PDF
+                                        <span class="btn-status" style="display: none;">⚠️</span>
                                     </button>
                                 </div>
                                 <button id="add-question" class="btn btn-success">Add Question</button>
@@ -127,6 +128,7 @@ export class QuizCreator {
         this.renderMetadataForm();
         this.renderSettingsForm();
         this.renderQuestions();
+        this.checkPdfSupport();
     }
 
     /**
@@ -355,7 +357,7 @@ export class QuizCreator {
 
         const generateFromPdfButton = this.container.querySelector('#generate-from-pdf');
         if (generateFromPdfButton) {
-            generateFromPdfButton.addEventListener('click', () => this.openPdfGenerationModal());
+            generateFromPdfButton.addEventListener('click', () => this.checkPdfSupportAndOpenModal());
         }
 
         // Question actions (edit/delete)
@@ -702,6 +704,57 @@ export class QuizCreator {
     }
 
     /**
+     * Check PDF support and update UI accordingly
+     */
+    async checkPdfSupport() {
+        try {
+            const pdfButton = this.container.querySelector('#generate-from-pdf');
+            const statusIcon = pdfButton?.querySelector('.btn-status');
+            
+            if (!pdfButton) return;
+            
+            const canProcess = await this.pdfProcessor.initializeWorker();
+            
+            if (!canProcess) {
+                pdfButton.classList.add('btn-warning');
+                pdfButton.classList.remove('btn-primary');
+                if (statusIcon) {
+                    statusIcon.style.display = 'inline';
+                    statusIcon.title = 'PDF processing may not be available';
+                }
+            }
+        } catch (error) {
+            console.warn('PDF support check failed:', error);
+        }
+    }
+
+    /**
+     * Check PDF support and open modal if available
+     */
+    async checkPdfSupportAndOpenModal() {
+        try {
+            // Test if PDF processor can be initialized
+            const canProcess = await this.pdfProcessor.initializeWorker();
+            
+            if (!canProcess) {
+                this.showAlert(
+                    'PDF processing is currently unavailable. Please use the "Generate from Text" option instead, or try refreshing the page.',
+                    'warning'
+                );
+                return;
+            }
+            
+            this.openPdfGenerationModal();
+        } catch (error) {
+            console.error('PDF support check failed:', error);
+            this.showAlert(
+                'PDF processing is currently unavailable. Please use the "Generate from Text" option instead.',
+                'warning'
+            );
+        }
+    }
+
+    /**
      * Open PDF-based AI generation modal
      */
     openPdfGenerationModal() {
@@ -740,6 +793,27 @@ export class QuizCreator {
                         </div>
                     </div>
                     ${this.renderGenerationOptions()}
+                    
+                    <!-- Progress Section -->
+                    <div class="generation-progress" style="display: none;">
+                        <div class="progress-header">
+                            <h4>Processing PDF...</h4>
+                            <div class="progress-spinner"></div>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill"></div>
+                        </div>
+                        <div class="progress-status">Extracting text from PDF...</div>
+                    </div>
+                    
+                    <!-- Error Display -->
+                    <div class="generation-error" style="display: none;">
+                        <div class="error-content">
+                            <div class="error-icon">⚠️</div>
+                            <div class="error-message"></div>
+                            <div class="error-suggestions"></div>
+                        </div>
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <button id="cancel-pdf-generation" class="btn btn-secondary">Cancel</button>
@@ -1310,20 +1384,26 @@ export class QuizCreator {
         const errorMessage = modalOverlay.querySelector('.error-message');
         const errorSuggestions = modalOverlay.querySelector('.error-suggestions');
         
-        errorMessage.innerHTML = `<strong>${title}</strong><br>${message}`;
-        
-        if (suggestions.length > 0) {
-            errorSuggestions.innerHTML = `
-                <strong>Suggestions:</strong>
-                <ul>
-                    ${suggestions.map(suggestion => `<li>${suggestion}</li>`).join('')}
-                </ul>
-            `;
-        } else {
-            errorSuggestions.innerHTML = '';
+        if (errorMessage) {
+            errorMessage.innerHTML = `<strong>${title}</strong><br>${message}`;
         }
         
-        errorSection.style.display = 'block';
+        if (errorSuggestions) {
+            if (suggestions.length > 0) {
+                errorSuggestions.innerHTML = `
+                    <strong>Suggestions:</strong>
+                    <ul>
+                        ${suggestions.map(suggestion => `<li>${suggestion}</li>`).join('')}
+                    </ul>
+                `;
+            } else {
+                errorSuggestions.innerHTML = '';
+            }
+        }
+        
+        if (errorSection) {
+            errorSection.style.display = 'block';
+        }
     }
 
     /**
@@ -1394,12 +1474,14 @@ export class QuizCreator {
         const progressStatus = modalOverlay.querySelector('.progress-status');
         
         // Reset progress
-        progressFill.style.width = '0%';
-        progressStatus.textContent = 'Preparing PDF processing...';
-        
-        // Add PDF-specific styling
-        progressFill.classList.remove('progress-success');
-        progressFill.classList.add('progress-pdf');
+        if (progressFill) {
+            progressFill.style.width = '0%';
+            progressFill.classList.remove('progress-success');
+            progressFill.classList.add('progress-pdf');
+        }
+        if (progressStatus) {
+            progressStatus.textContent = 'Preparing PDF processing...';
+        }
     }
 
     /**
@@ -1411,8 +1493,12 @@ export class QuizCreator {
         const progressStatus = modalOverlay.querySelector('.progress-status');
         const progressFill = modalOverlay.querySelector('.progress-fill');
         
-        progressStatus.textContent = status;
-        progressFill.style.width = '70%';
+        if (progressStatus) {
+            progressStatus.textContent = status;
+        }
+        if (progressFill) {
+            progressFill.style.width = '70%';
+        }
     }
 
     /**
@@ -1423,10 +1509,13 @@ export class QuizCreator {
         const progressFill = modalOverlay.querySelector('.progress-fill');
         const progressStatus = modalOverlay.querySelector('.progress-status');
         
-        progressFill.style.width = '100%';
-        progressStatus.textContent = 'PDF processing complete!';
-        
-        // Add success styling
+        if (progressFill) {
+            progressFill.style.width = '100%';
+            // Add success styling
+        }
+        if (progressStatus) {
+            progressStatus.textContent = 'PDF processing complete!';
+        }
         progressFill.classList.remove('progress-pdf');
         progressFill.classList.add('progress-success');
     }
@@ -1441,11 +1530,15 @@ export class QuizCreator {
         const generateBtn = modalOverlay.querySelector('#generate-pdf-quiz');
         
         // Hide progress
-        progressSection.style.display = 'none';
+        if (progressSection) {
+            progressSection.style.display = 'none';
+        }
         
         // Re-enable form
         this.toggleFormInputs(modalOverlay, true);
-        generateBtn.disabled = false;
+        if (generateBtn) {
+            generateBtn.disabled = false;
+        }
         
         // Show detailed error
         let errorTitle = 'PDF Processing Failed';
@@ -1476,6 +1569,34 @@ export class QuizCreator {
                 'Ensure the PDF contains text (not just images)',
                 'Try a PDF with more detailed content',
                 'Check if the PDF is text-searchable'
+            ];
+        } else if (error.message.includes('PDF processing service is currently unavailable')) {
+            errorTitle = 'PDF Service Unavailable';
+            errorMessage = 'PDF processing service is currently unavailable';
+            suggestions = [
+                'Check your internet connection',
+                'Try refreshing the page',
+                'Try again in a few moments',
+                'Use the text generation option instead'
+            ];
+        } else if (error.message.includes('GlobalWorkerOptions.workerSrc')) {
+            errorTitle = 'PDF Worker Configuration Error';
+            errorMessage = 'PDF processing worker could not be configured';
+            suggestions = [
+                'Refresh the page and try again',
+                'Check your internet connection',
+                'Try using a different browser',
+                'Use the text generation option as an alternative'
+            ];
+        } else if (error.message.includes('Failed to fetch dynamically imported module') || 
+                   error.message.includes('Setting up fake worker failed')) {
+            errorTitle = 'PDF Worker Error';
+            errorMessage = 'PDF processing components failed to load';
+            suggestions = [
+                'Check your internet connection',
+                'Refresh the page and try again',
+                'Try using a different browser',
+                'Use the text generation option as an alternative'
             ];
         } else if (error.message.includes('Failed to extract text')) {
             errorTitle = 'Text Extraction Failed';

@@ -43,6 +43,20 @@
     box-shadow: var(--shadow-md);
 }
 
+.ai-generate-btn.btn-warning {
+    background-color: var(--warning-color);
+    border-color: var(--warning-color);
+}
+
+.ai-generate-btn.btn-warning:hover {
+    background-color: var(--warning-color-dark);
+}
+
+.btn-status {
+    margin-left: var(--spacing-xs);
+    font-size: 0.9em;
+}
+
 /* AI Generation Modal */
 .ai-generation-modal {
     max-width: 600px;

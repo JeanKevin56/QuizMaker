@@ -17,6 +17,47 @@ vi.mock('../services/StorageManager.js', () => ({
     }))
 }));
 
+// Mock PDFProcessor
+vi.mock('../services/PDFProcessor.js', () => ({
+    PDFProcessor: vi.fn().mockImplementation(() => ({
+        initializeWorker: vi.fn().mockResolvedValue(true),
+        validateFile: vi.fn().mockReturnValue({ success: true, message: 'File is valid' }),
+        extractText: vi.fn().mockResolvedValue({
+            success: true,
+            text: 'Sample PDF text content',
+            metadata: { fileName: 'test.pdf', fileSize: 1024, pageCount: 1 },
+            pages: [{ pageNumber: 1, text: 'Sample PDF text content' }]
+        }),
+        formatExtractedText: vi.fn().mockImplementation(text => text),
+        getProcessingInfo: vi.fn().mockReturnValue({
+            maxFileSize: 10 * 1024 * 1024,
+            maxFileSizeMB: 10,
+            supportedTypes: ['application/pdf'],
+            isReady: true
+        })
+    }))
+}));
+
+// Mock AIQuizGenerator
+vi.mock('../services/AIQuizGenerator.js', () => ({
+    AIQuizGenerator: vi.fn().mockImplementation(() => ({
+        generateQuestions: vi.fn().mockResolvedValue({
+            success: true,
+            questions: [
+                {
+                    id: 'test-q1',
+                    type: 'mcq-single',
+                    question: 'Test question?',
+                    options: ['Option A', 'Option B', 'Option C', 'Option D'],
+                    correctAnswer: 0,
+                    explanation: 'Test explanation'
+                }
+            ],
+            metadata: { generatedCount: 1 }
+        })
+    }))
+}));
+
 describe('QuizCreator', () => {
     let quizCreator;
     let container;
@@ -315,6 +356,9 @@ describe('QuizCreator', () => {
             
             const generateFromPdfBtn = container.querySelector('#generate-from-pdf');
             generateFromPdfBtn.click();
+            
+            // Wait for async PDF support check
+            await new Promise(resolve => setTimeout(resolve, 10));
             
             // Check if modal is created
             const modal = document.querySelector('.modal-overlay');
@@ -623,6 +667,9 @@ describe('QuizCreator', () => {
             const generateFromPdfBtn = container.querySelector('#generate-from-pdf');
             generateFromPdfBtn.click();
             
+            // Wait for async PDF support check
+            await new Promise(resolve => setTimeout(resolve, 10));
+            
             const modal = document.querySelector('.modal-overlay');
             const uploadArea = modal.querySelector('.file-upload-area');
             const fileInput = modal.querySelector('#pdf-file');
@@ -644,6 +691,9 @@ describe('QuizCreator', () => {
             
             const generateFromPdfBtn = container.querySelector('#generate-from-pdf');
             generateFromPdfBtn.click();
+            
+            // Wait for async PDF support check
+            await new Promise(resolve => setTimeout(resolve, 10));
             
             const modal = document.querySelector('.modal-overlay');
             const uploadContent = modal.querySelector('.file-upload-content');
@@ -684,6 +734,9 @@ describe('QuizCreator', () => {
             const generateFromPdfBtn = container.querySelector('#generate-from-pdf');
             generateFromPdfBtn.click();
             
+            // Wait for async PDF support check
+            await new Promise(resolve => setTimeout(resolve, 10));
+            
             const modal = document.querySelector('.modal-overlay');
             const uploadContent = modal.querySelector('.file-upload-content');
             const selectedContent = modal.querySelector('.file-upload-selected');
@@ -721,6 +774,9 @@ describe('QuizCreator', () => {
             const generateFromPdfBtn = container.querySelector('#generate-from-pdf');
             generateFromPdfBtn.click();
             
+            // Wait for async PDF support check
+            await new Promise(resolve => setTimeout(resolve, 10));
+            
             const modal = document.querySelector('.modal-overlay');
             const uploadArea = modal.querySelector('.file-upload-area');
             
@@ -745,6 +801,9 @@ describe('QuizCreator', () => {
             
             const generateFromPdfBtn = container.querySelector('#generate-from-pdf');
             generateFromPdfBtn.click();
+            
+            // Wait for async PDF support check
+            await new Promise(resolve => setTimeout(resolve, 10));
             
             const modal = document.querySelector('.modal-overlay');
             const fileInput = modal.querySelector('#pdf-file');

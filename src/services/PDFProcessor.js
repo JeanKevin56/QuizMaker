@@ -5,13 +5,133 @@
 
 import * as pdfjsLib from 'pdfjs-dist';
 
-// Configure PDF.js worker
-pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.0.379/pdf.worker.min.js`;
+// Configure PDF.js worker with fallback options
+const configureWorker = () => {
+    // Always set a worker source - PDF.js requires this
+    const workerSources = [
+        `https://unpkg.com/pdfjs-dist@4.0.379/build/pdf.worker.min.js`,
+        `https://cdn.jsdelivr.net/npm/pdfjs-dist@4.0.379/build/pdf.worker.min.js`,
+        `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.0.379/pdf.worker.min.js`
+    ];
+    
+    // Use the first available source
+    pdfjsLib.GlobalWorkerOptions.workerSrc = workerSources[0];
+};
+
+configureWorker();
 
 export class PDFProcessor {
     constructor() {
         this.maxFileSize = 10 * 1024 * 1024; // 10MB limit
         this.supportedTypes = ['application/pdf'];
+        this.workerInitialized = false;
+    }
+
+    /**
+     * Initialize PDF.js worker with fallback handling
+     * @returns {Promise<boolean>} - True if worker is successfully initialized
+     */
+    async initializeWorker() {
+        if (this.workerInitialized) {
+            return true;
+        }
+
+        try {
+            // Try different worker sources
+            const workerSources = [
+                `https://unpkg.com/pdfjs-dist@4.0.379/build/pdf.worker.min.js`,
+                `https://cdn.jsdelivr.net/npm/pdfjs-dist@4.0.379/build/pdf.worker.min.js`,
+                `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.0.379/pdf.worker.min.js`
+            ];
+
+            for (const workerSrc of workerSources) {
+                try {
+                    pdfjsLib.GlobalWorkerOptions.workerSrc = workerSrc;
+                    
+                    // Test with a simple PDF processing task
+                    const testResult = await this.testPdfProcessing();
+                    if (testResult) {
+                        console.log(`PDF.js worker initialized successfully with: ${workerSrc}`);
+                        this.workerInitialized = true;
+                        return true;
+                    }
+                } catch (error) {
+                    console.warn(`Failed to initialize PDF.js worker with ${workerSrc}:`, error);
+                    continue;
+                }
+            }
+
+            console.error('Failed to initialize PDF.js worker with any CDN source');
+            return false;
+
+        } catch (error) {
+            console.error('Failed to initialize PDF.js:', error);
+            return false;
+        }
+    }
+
+    /**
+     * Test PDF processing capability
+     * @returns {Promise<boolean>} - True if PDF processing works
+     */
+    async testPdfProcessing() {
+        try {
+            // Create a minimal valid PDF for testing
+            const minimalPdf = this.createMinimalPdfBuffer();
+            await pdfjsLib.getDocument({ data: minimalPdf }).promise;
+            return true;
+        } catch (error) {
+            console.warn('PDF processing test failed:', error);
+            return false;
+        }
+    }
+
+    /**
+     * Create a minimal PDF buffer for testing
+     * @returns {Uint8Array} - Minimal PDF buffer
+     */
+    createMinimalPdfBuffer() {
+        // This is a minimal valid PDF that contains just the header and basic structure
+        const pdfContent = `%PDF-1.4
+1 0 obj
+<<
+/Type /Catalog
+/Pages 2 0 R
+>>
+endobj
+
+2 0 obj
+<<
+/Type /Pages
+/Kids [3 0 R]
+/Count 1
+>>
+endobj
+
+3 0 obj
+<<
+/Type /Page
+/Parent 2 0 R
+/MediaBox [0 0 612 792]
+>>
+endobj
+
+xref
+0 4
+0000000000 65535 f 
+0000000010 00000 n 
+0000000053 00000 n 
+0000000100 00000 n 
+trailer
+<<
+/Size 4
+/Root 1 0 R
+>>
+startxref
+149
+%%EOF`;
+        
+        return new TextEncoder().encode(pdfContent);
     }
 
     /**
@@ -46,6 +166,12 @@ export class PDFProcessor {
             const validation = this.validateFile(file);
             if (!validation.success) {
                 throw new Error(validation.message);
+            }
+
+            // Initialize worker if not already done
+            const workerReady = await this.initializeWorker();
+            if (!workerReady) {
+                throw new Error('PDF processing service is currently unavailable. This may be due to network connectivity issues or browser compatibility. Please try refreshing the page or use the text generation option instead.');
             }
 
             // Convert file to array buffer
@@ -148,6 +274,12 @@ export class PDFProcessor {
                 throw new Error(validation.message);
             }
 
+            // Initialize worker if not already done
+            const workerReady = await this.initializeWorker();
+            if (!workerReady) {
+                throw new Error('PDF processing service is currently unavailable. This may be due to network connectivity issues or browser compatibility. Please try refreshing the page or use the text generation option instead.');
+            }
+
             const arrayBuffer = await file.arrayBuffer();
             const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
             const metadata = await pdf.getMetadata();
@@ -183,8 +315,7 @@ export class PDFProcessor {
      * @returns {boolean} - True if PDF.js is ready
      */
     isReady() {
-        return typeof pdfjsLib !== 'undefined' && 
-               pdfjsLib.GlobalWorkerOptions.workerSrc !== '';
+        return typeof pdfjsLib !== 'undefined' && this.workerInitialized;
     }
 
     /**
