@@ -56,7 +56,7 @@ The project includes GitHub Actions for automatic deployment:
 6. **Monitor deployment**:
    - Check the "Actions" tab in your repository
    - Deployment typically takes 2-5 minutes
-   - Your site will be available at `https://your-username.github.io/your-repo-name`
+   - Your site will be available at `https://JeanKevin56.github.io/your-repo-name`
 
 ### Manual GitHub Pages Setup
 

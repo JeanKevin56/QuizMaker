@@ -134,7 +134,7 @@ function navigateToView(viewName, data = {}) {
  */
 async function loadUserPreferences() {
     try {
-        const preferences = localStorage.getItem('quiz-platform-preferences');
+        const preferences = localStorage.getItem('QuizMaker-preferences');
         if (preferences) {
             const parsedPreferences = JSON.parse(preferences);
             console.log('Loaded user preferences:', parsedPreferences);

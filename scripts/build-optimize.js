@@ -59,8 +59,8 @@ async function optimizeServiceWorker() {
         // Update cache version with build timestamp
         const buildTime = new Date().toISOString().replace(/[:.]/g, '-');
         swContent = swContent.replace(
-            /const CACHE_NAME = 'quiz-platform-v1'/,
-            `const CACHE_NAME = 'quiz-platform-${buildTime}'`
+            /const CACHE_NAME = 'QuizMaker-v1'/,
+            `const CACHE_NAME = 'QuizMaker-${buildTime}'`
         );
         
         // Update static assets list with actual built files
@@ -184,7 +184,7 @@ async function optimizeImages() {
 async function generateSitemap() {
     console.log('🗺️  Generating sitemap...');
     
-    const baseUrl = 'https://your-domain.github.io/quiz-platform'; // Update with actual URL
+    const baseUrl = 'https://your-domain.github.io/QuizMaker'; // Update with actual URL
     const pages = [
         { url: '/', priority: '1.0', changefreq: 'weekly' },
         { url: '/dashboard', priority: '0.8', changefreq: 'weekly' },

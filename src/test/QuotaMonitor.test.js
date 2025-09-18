@@ -137,7 +137,7 @@ describe('QuotaMonitor', () => {
       quotaMonitor.updateQuota('Test API', { usage: 0.5 });
       
       expect(localStorage.setItem).toHaveBeenCalledWith(
-        'quiz-platform-quota-data',
+        'QuizMaker-quota-data',
         expect.stringContaining('Test API')
       );
     });

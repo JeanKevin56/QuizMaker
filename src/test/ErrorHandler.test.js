@@ -343,7 +343,7 @@ describe('ErrorHandler', () => {
       await errorHandler.storeError(error);
       
       expect(localStorage.setItem).toHaveBeenCalledWith(
-        'quiz-platform-errors',
+        'QuizMaker-errors',
         expect.stringContaining('test-error')
       );
     });
@@ -365,7 +365,7 @@ describe('ErrorHandler', () => {
       await errorHandler.storeError(newError);
       
       expect(localStorage.setItem).toHaveBeenCalledWith(
-        'quiz-platform-errors',
+        'QuizMaker-errors',
         expect.stringMatching(/new-error/)
       );
     });
@@ -444,7 +444,7 @@ describe('ErrorHandler', () => {
 
     test('should clear stored errors', () => {
       errorHandler.clearStoredErrors();
-      expect(localStorage.removeItem).toHaveBeenCalledWith('quiz-platform-errors');
+      expect(localStorage.removeItem).toHaveBeenCalledWith('QuizMaker-errors');
     });
 
     test('should return online status', () => {

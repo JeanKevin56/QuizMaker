@@ -23,8 +23,8 @@ A web-based quiz platform with AI-powered features for educational purposes. Bui
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/username/quiz-platform.git
-cd quiz-platform
+git clone https://github.com/username/QuizMaker.git
+cd QuizMaker
 ```
 
 2. Install dependencies:
@@ -54,7 +54,7 @@ npm run dev
 ### Project Structure
 
 ```
-quiz-platform/
+QuizMaker/
 ├── src/
 │   ├── components/     # Reusable UI components
 │   ├── services/       # Business logic and API services
@@ -98,7 +98,7 @@ The easiest way to deploy is using the automated GitHub Actions workflow:
 3. **Enable GitHub Pages** in repository Settings → Pages → Source: "GitHub Actions"
 4. **Push to main branch** - deployment happens automatically!
 
-Your site will be available at: `https://your-username.github.io/your-repo-name`
+Your site will be available at: `https://JeanKevin56.github.io/your-repo-name`
 
 ### Manual Deployment
 

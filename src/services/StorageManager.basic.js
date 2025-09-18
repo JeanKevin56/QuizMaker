@@ -89,10 +89,10 @@ export class StorageManager {
     if (this.userId) return this.userId;
 
     try {
-      let userId = localStorage.getItem('quiz-platform-user-id');
+      let userId = localStorage.getItem('QuizMaker-user-id');
       if (!userId) {
         userId = `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-        localStorage.setItem('quiz-platform-user-id', userId);
+        localStorage.setItem('QuizMaker-user-id', userId);
       }
       this.userId = userId;
       return userId;
@@ -413,7 +413,7 @@ export class StorageManager {
     }
 
     try {
-      localStorage.setItem('quiz-platform-preferences', JSON.stringify(preferences));
+      localStorage.setItem('QuizMaker-preferences', JSON.stringify(preferences));
     } catch (error) {
       throw new Error('Failed to store user preferences: ' + error.message);
     }
@@ -425,7 +425,7 @@ export class StorageManager {
    */
   async getUserPreferences() {
     try {
-      const data = localStorage.getItem('quiz-platform-preferences');
+      const data = localStorage.getItem('QuizMaker-preferences');
       if (!data) return null;
       
       const preferences = JSON.parse(data);
@@ -586,8 +586,8 @@ export class StorageManager {
       transaction.oncomplete = () => {
         // Also clear localStorage
         try {
-          localStorage.removeItem('quiz-platform-preferences');
-          localStorage.removeItem('quiz-platform-user-id');
+          localStorage.removeItem('QuizMaker-preferences');
+          localStorage.removeItem('QuizMaker-user-id');
         } catch (error) {
           // Ignore localStorage errors
         }

@@ -253,7 +253,7 @@ describe('Settings Component', () => {
             await settings.exportData();
             
             expect(mockLink.click).toHaveBeenCalled();
-            expect(mockLink.download).toContain('quiz-platform-data-');
+            expect(mockLink.download).toContain('QuizMaker-data-');
         });
 
         test('should reset to defaults', () => {

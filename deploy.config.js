@@ -13,7 +13,7 @@ export const deployConfig = {
     // Custom domain (optional)
     customDomain: null, // e.g., 'quiz.yourdomain.com'
   },
-  
+
   // Build settings
   build: {
     // Output directory
@@ -25,7 +25,7 @@ export const deployConfig = {
     // Enable minification
     minify: true,
   },
-  
+
   // Environment-specific settings
   environments: {
     development: {
@@ -34,12 +34,12 @@ export const deployConfig = {
       enableConsole: true,
     },
     production: {
-      apiEndpoint: 'https://JeanKevin56.github.io/',
+      apiEndpoint: 'https://jeankevin56.github.io/QuizMaker',
       enableDebug: false,
       enableConsole: false,
     },
   },
-  
+
   // Feature flags
   features: {
     // Enable service worker for offline functionality
@@ -49,7 +49,7 @@ export const deployConfig = {
     // Enable analytics (set to your analytics ID)
     analytics: null,
   },
-  
+
   // Security settings
   security: {
     // Content Security Policy

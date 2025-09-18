@@ -131,8 +131,8 @@
             const confirmed = confirm('Reset the demo? This will clear all settings and reload the component.');
             if (confirmed) {
                 // Clear localStorage
-                localStorage.removeItem('quiz-platform-preferences');
-                localStorage.removeItem('quiz-platform-user-id');
+                localStorage.removeItem('QuizMaker-preferences');
+                localStorage.removeItem('QuizMaker-user-id');
                 
                 // Reinitialize
                 initDemo();

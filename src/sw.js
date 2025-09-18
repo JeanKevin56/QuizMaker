@@ -3,9 +3,9 @@
  * Provides offline functionality and caching strategies
  */
 
-const CACHE_NAME = 'quiz-platform-v1';
-const STATIC_CACHE_NAME = 'quiz-platform-static-v1';
-const DYNAMIC_CACHE_NAME = 'quiz-platform-dynamic-v1';
+const CACHE_NAME = 'QuizMaker-v1';
+const STATIC_CACHE_NAME = 'QuizMaker-static-v1';
+const DYNAMIC_CACHE_NAME = 'QuizMaker-dynamic-v1';
 
 // Files to cache immediately
 const STATIC_ASSETS = [
@@ -66,7 +66,7 @@ self.addEventListener('activate', (event) => {
                     cacheNames.map((cacheName) => {
                         if (cacheName !== STATIC_CACHE_NAME && 
                             cacheName !== DYNAMIC_CACHE_NAME &&
-                            cacheName.startsWith('quiz-platform-')) {
+                            cacheName.startsWith('QuizMaker-')) {
                             console.log('Service Worker: Deleting old cache:', cacheName);
                             return caches.delete(cacheName);
                         }

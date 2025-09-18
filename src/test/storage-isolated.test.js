@@ -204,10 +204,10 @@ describe('Storage Operations (Isolated)', () => {
         preferences: { theme: 'dark' }
       };
 
-      localStorage.setItem('quiz-platform-preferences', JSON.stringify(preferences));
+      localStorage.setItem('QuizMaker-preferences', JSON.stringify(preferences));
       
       expect(localStorage.setItem).toHaveBeenCalledWith(
-        'quiz-platform-preferences',
+        'QuizMaker-preferences',
         JSON.stringify(preferences)
       );
     });
@@ -220,7 +220,7 @@ describe('Storage Operations (Isolated)', () => {
 
       localStorage.getItem.mockReturnValue(JSON.stringify(preferences));
       
-      const data = localStorage.getItem('quiz-platform-preferences');
+      const data = localStorage.getItem('QuizMaker-preferences');
       const parsed = JSON.parse(data);
       
       expect(parsed).toEqual(preferences);
@@ -231,9 +231,9 @@ describe('Storage Operations (Isolated)', () => {
       
       // Simulate generating new user ID
       const userId = `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-      localStorage.setItem('quiz-platform-user-id', userId);
+      localStorage.setItem('QuizMaker-user-id', userId);
       
-      expect(localStorage.setItem).toHaveBeenCalledWith('quiz-platform-user-id', userId);
+      expect(localStorage.setItem).toHaveBeenCalledWith('QuizMaker-user-id', userId);
     });
   });
 

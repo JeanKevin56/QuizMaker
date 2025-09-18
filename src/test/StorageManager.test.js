@@ -218,7 +218,7 @@ describe('StorageManager', () => {
 
     it('should reuse existing user ID from localStorage', () => {
       const existingUserId = 'existing-user-123';
-      mockLocalStorage.data.set('quiz-platform-user-id', existingUserId);
+      mockLocalStorage.data.set('QuizMaker-user-id', existingUserId);
       
       const newStorageManager = new StorageManager();
       expect(newStorageManager.getUserId()).toBe(existingUserId);
@@ -407,7 +407,7 @@ describe('StorageManager', () => {
       await expect(storageManager.storeUserPreferences(preferences)).resolves.not.toThrow();
       
       expect(mockLocalStorage.setItem).toHaveBeenCalledWith(
-        'quiz-platform-preferences',
+        'QuizMaker-preferences',
         JSON.stringify(preferences)
       );
     });
@@ -420,7 +420,7 @@ describe('StorageManager', () => {
 
     it('should retrieve stored user preferences', async () => {
       const preferences = createTestUserPreferences();
-      mockLocalStorage.data.set('quiz-platform-preferences', JSON.stringify(preferences));
+      mockLocalStorage.data.set('QuizMaker-preferences', JSON.stringify(preferences));
       
       const retrieved = await storageManager.getUserPreferences();
       expect(retrieved).toEqual(preferences);
@@ -596,7 +596,7 @@ describe('StorageManager', () => {
     });
 
     it('should handle corrupted localStorage data', async () => {
-      mockLocalStorage.data.set('quiz-platform-preferences', 'invalid-json');
+      mockLocalStorage.data.set('QuizMaker-preferences', 'invalid-json');
       
       const retrieved = await storageManager.getUserPreferences();
       expect(retrieved).toBeNull();

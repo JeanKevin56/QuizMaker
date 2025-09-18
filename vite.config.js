@@ -11,7 +11,7 @@ export default defineConfig(({ command, mode }) => {
       targets: ['defaults', 'not IE 11']
     })
   ],
-  base: mode === 'production' ? '/quiz-platform/' : './',
+  base: mode === 'production' ? '/QuizMaker/' : './',
   define: {
     __APP_VERSION__: JSON.stringify(process.env.npm_package_version),
     __BUILD_TIME__: JSON.stringify(new Date().toISOString()),

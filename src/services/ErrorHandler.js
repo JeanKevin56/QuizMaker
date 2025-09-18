@@ -467,7 +467,7 @@ export class ErrorHandler {
    */
   async storeError(error) {
     try {
-      const errors = JSON.parse(localStorage.getItem('quiz-platform-errors') || '[]');
+      const errors = JSON.parse(localStorage.getItem('QuizMaker-errors') || '[]');
       errors.push(error);
       
       // Keep only last 50 errors
@@ -475,7 +475,7 @@ export class ErrorHandler {
         errors.splice(0, errors.length - 50);
       }
       
-      localStorage.setItem('quiz-platform-errors', JSON.stringify(errors));
+      localStorage.setItem('QuizMaker-errors', JSON.stringify(errors));
     } catch (storageError) {
       console.warn('Failed to store error:', storageError);
     }
@@ -612,7 +612,7 @@ export class ErrorHandler {
    */
   getStoredErrors() {
     try {
-      return JSON.parse(localStorage.getItem('quiz-platform-errors') || '[]');
+      return JSON.parse(localStorage.getItem('QuizMaker-errors') || '[]');
     } catch (error) {
       return [];
     }
@@ -623,7 +623,7 @@ export class ErrorHandler {
    */
   clearStoredErrors() {
     try {
-      localStorage.removeItem('quiz-platform-errors');
+      localStorage.removeItem('QuizMaker-errors');
     } catch (error) {
       console.warn('Failed to clear stored errors:', error);
     }

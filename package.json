@@ -1,5 +1,5 @@
 {
-  "name": "quiz-platform",
+  "name": "QuizMaker",
   "version": "1.0.0",
   "description": "A web-based quiz platform with AI-powered features",
   "type": "module",
@@ -42,7 +42,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/username/quiz-platform.git"
+    "url": "https://github.com/username/QuizMaker.git"
   },
   "keywords": [
     "quiz",

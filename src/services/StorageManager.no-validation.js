@@ -14,8 +14,8 @@ const STORAGE_CONFIG = {
     MEDIA: 'media'
   },
   LOCAL_STORAGE_KEYS: {
-    USER_PREFERENCES: 'quiz-platform-preferences',
-    USER_ID: 'quiz-platform-user-id'
+    USER_PREFERENCES: 'QuizMaker-preferences',
+    USER_ID: 'QuizMaker-user-id'
   }
 };
 

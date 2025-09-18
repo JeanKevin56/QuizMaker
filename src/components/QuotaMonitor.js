@@ -28,7 +28,7 @@ export class QuotaMonitor {
    */
   loadStoredQuotaData() {
     try {
-      const stored = localStorage.getItem('quiz-platform-quota-data');
+      const stored = localStorage.getItem('QuizMaker-quota-data');
       if (stored) {
         const data = JSON.parse(stored);
         this.quotaData = new Map(Object.entries(data));
@@ -45,7 +45,7 @@ export class QuotaMonitor {
   saveQuotaData() {
     try {
       const data = Object.fromEntries(this.quotaData);
-      localStorage.setItem('quiz-platform-quota-data', JSON.stringify(data));
+      localStorage.setItem('QuizMaker-quota-data', JSON.stringify(data));
     } catch (error) {
       console.warn('Failed to save quota data:', error);
     }
