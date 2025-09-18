@@ -7,6 +7,7 @@ import { StorageManager } from '../services/StorageManager.js';
 import { THEMES } from '../models/types.js';
 import { isValidUserPreferences } from '../models/validation.js';
 import { createAlert, createLoadingSpinner } from './Layout.js';
+import { GeminiAPIService } from '../services/GeminiAPIService.js';
 
 export class Settings {
     constructor() {
@@ -363,8 +364,7 @@ export class Settings {
             testButton.textContent = 'Testing...';
             testButton.disabled = true;
 
-            // Import and test the Gemini API service
-            const { GeminiAPIService } = await import('../services/GeminiAPIService.js');
+            // Test the Gemini API service
             const apiService = new GeminiAPIService();
             
             // Set the API key and test it

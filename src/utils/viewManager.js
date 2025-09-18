@@ -4,6 +4,9 @@
  */
 
 import { lazyLoader, loadComponentWithIndicator } from './lazyLoader.js';
+import { QuizDashboard } from '../components/QuizDashboard.js';
+import { QuizCreator } from '../components/QuizCreator.js';
+import { Settings } from '../components/Settings.js';
 
 class ViewManager {
     constructor() {
@@ -158,7 +161,7 @@ class ViewManager {
     }
     
     /**
-     * Initialize dashboard view with lazy loading
+     * Initialize dashboard view
      * @param {Object} data - View data
      */
     async initializeDashboard(data) {
@@ -166,12 +169,6 @@ class ViewManager {
         if (!dashboardView) return;
 
         try {
-            const { QuizDashboard } = await loadComponentWithIndicator(
-                '../components/QuizDashboard.js',
-                'QuizDashboard',
-                dashboardView
-            );
-            
             let dashboard = this.componentInstances.get('dashboard');
             if (!dashboard) {
                 dashboard = new QuizDashboard();
@@ -195,7 +192,7 @@ class ViewManager {
     }
     
     /**
-     * Initialize quiz creation view with lazy loading
+     * Initialize quiz creation view
      * @param {Object} data - View data
      */
     async initializeCreate(data) {
@@ -203,12 +200,6 @@ class ViewManager {
         if (!createView) return;
 
         try {
-            const { QuizCreator } = await loadComponentWithIndicator(
-                '../components/QuizCreator.js',
-                'QuizCreator',
-                createView
-            );
-            
             let quizCreator = this.componentInstances.get('create');
             if (!quizCreator) {
                 quizCreator = new QuizCreator();
@@ -232,7 +223,7 @@ class ViewManager {
     }
     
     /**
-     * Initialize settings view with lazy loading
+     * Initialize settings view
      * @param {Object} data - View data
      */
     async initializeSettings(data) {
@@ -240,12 +231,6 @@ class ViewManager {
         if (!settingsView) return;
 
         try {
-            const { Settings } = await loadComponentWithIndicator(
-                '../components/Settings.js',
-                'Settings',
-                settingsView
-            );
-            
             let settings = this.componentInstances.get('settings');
             if (!settings) {
                 settings = new Settings();

@@ -7,6 +7,7 @@ import { createFormGroup, createButton, createAlert } from './Layout.js';
 import { QUESTION_TYPES } from '../models/types.js';
 import { validateQuiz } from '../models/validation.js';
 import { StorageManager } from '../services/StorageManager.js';
+import { QuestionEditor } from './QuestionEditor.js';
 
 export class QuizCreator {
     constructor(storageManager = null) {
@@ -485,9 +486,8 @@ export class QuizCreator {
         document.body.appendChild(modalOverlay);
 
         // Initialize question editor
-        import('./QuestionEditor.js').then(({ QuestionEditor }) => {
-            const questionEditor = new QuestionEditor(this.storageManager);
-            const editorContainer = modalOverlay.querySelector('#question-editor-container');
+        const questionEditor = new QuestionEditor(this.storageManager);
+        const editorContainer = modalOverlay.querySelector('#question-editor-container');
             
             questionEditor.init(
                 editorContainer,
@@ -495,11 +495,6 @@ export class QuizCreator {
                 (question) => this.handleQuestionSave(question, questionIndex, modalOverlay),
                 () => this.handleQuestionCancel(modalOverlay)
             );
-        }).catch(error => {
-            console.error('Failed to load question editor:', error);
-            this.showAlert('Failed to load question editor', 'error');
-            modalOverlay.remove();
-        });
 
         // Close on overlay click
         modalOverlay.addEventListener('click', (e) => {
