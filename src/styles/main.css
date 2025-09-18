@@ -1,3 +1,14 @@
+/* Import component styles */
+@import url('./results.css');
+@import url('./quiz-creator.css');
+@import url('./question-editor.css');
+@import url('./media-upload.css');
+@import url('./dashboard.css');
+@import url('./settings.css');
+@import url('./error-handling.css');
+@import url('./ai-generation.css');
+@import url('./quiz-review.css');
+
 /* Reset and base styles */
 * {
     margin: 0;
@@ -644,14 +655,6 @@ omponent styles */
         transition: none !important;
     }
 }
-/* Import component styles */
-@import url('./results.css');
-@import url('./quiz-creator.css');
-@import url('./question-editor.css');
-@import url('./media-upload.css');
-@import url('./dashboard.css');
-@import url('./settings.css');
-@import url('./error-handling.css');
 
 /* 
 Question rendering components */
