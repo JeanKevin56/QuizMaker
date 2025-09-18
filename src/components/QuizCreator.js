@@ -713,14 +713,24 @@ export class QuizCreator {
             
             if (!pdfButton) return;
             
+            // Check if we're in a deployed environment
+            const isDeployed = window.location.hostname !== 'localhost' && 
+                              window.location.hostname !== '127.0.0.1' && 
+                              !window.location.hostname.startsWith('192.168.') &&
+                              !window.location.hostname.includes('localhost');
+            
             const canProcess = await this.pdfProcessor.initializeWorker();
             
-            if (!canProcess) {
+            if (!canProcess || isDeployed) {
                 pdfButton.classList.add('btn-warning');
                 pdfButton.classList.remove('btn-primary');
                 if (statusIcon) {
                     statusIcon.style.display = 'inline';
-                    statusIcon.title = 'PDF processing may not be available';
+                    if (isDeployed) {
+                        statusIcon.title = 'PDF processing may be slower in deployed environment';
+                    } else {
+                        statusIcon.title = 'PDF processing may not be available';
+                    }
                 }
             }
         } catch (error) {
@@ -1588,15 +1598,17 @@ export class QuizCreator {
                 'Try using a different browser',
                 'Use the text generation option as an alternative'
             ];
-        } else if (error.message.includes('Failed to fetch dynamically imported module') || 
+        } else if (error.message.includes('CORS') || 
+                   error.message.includes('Access-Control-Allow-Origin') ||
+                   error.message.includes('Failed to fetch dynamically imported module') || 
                    error.message.includes('Setting up fake worker failed')) {
-            errorTitle = 'PDF Worker Error';
-            errorMessage = 'PDF processing components failed to load';
+            errorTitle = 'PDF Service Configuration Issue';
+            errorMessage = 'PDF processing service encountered a configuration issue';
             suggestions = [
-                'Check your internet connection',
-                'Refresh the page and try again',
-                'Try using a different browser',
-                'Use the text generation option as an alternative'
+                'This is likely a temporary issue with the PDF service',
+                'Try refreshing the page and attempting again',
+                'Use the text generation option as a reliable alternative',
+                'Contact support if the issue persists'
             ];
         } else if (error.message.includes('Failed to extract text')) {
             errorTitle = 'Text Extraction Failed';
