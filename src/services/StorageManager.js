@@ -1,5 +1,4 @@
 import { THEMES } from '../models/types.js';
-import { errorHandler, ERROR_TYPES, ERROR_SEVERITY } from './ErrorHandler.js';
 
 /**
  * StorageManager handles all data persistence operations using IndexedDB and LocalStorage
@@ -25,7 +24,7 @@ export class StorageManager {
     // Check for IndexedDB support
     if (!window.indexedDB) {
       const error = new Error('IndexedDB not supported in this browser');
-      errorHandler.handleError(error, 'Storage Initialization');
+      console.error('Storage Initialization Error:', error);
       throw error;
     }
 
@@ -34,7 +33,7 @@ export class StorageManager {
       this.isInitialized = true;
     } catch (error) {
       const storageError = new Error(`Failed to initialize storage: ${error.message}`);
-      errorHandler.handleError(storageError, 'Storage Initialization');
+      console.error('Storage Initialization Error:', storageError);
       throw storageError;
     }
   }
@@ -417,7 +416,7 @@ export class StorageManager {
     // Basic validation
     if (!preferences || typeof preferences !== 'object') {
       const error = new Error('Invalid user preferences data');
-      errorHandler.handleError(error, 'User Preferences Validation');
+      console.error('User Preferences Validation Error:', error);
       throw error;
     }
 
@@ -426,14 +425,11 @@ export class StorageManager {
     } catch (error) {
       // Handle storage quota exceeded
       if (error.name === 'QuotaExceededError') {
-        errorHandler.showNotification(
-          'Storage quota exceeded. Please clear some data or free up browser storage.',
-          'error'
-        );
+        console.error('Storage quota exceeded. Please clear some data or free up browser storage.');
       }
       
       const storageError = new Error('Failed to store user preferences: ' + error.message);
-      errorHandler.handleError(storageError, 'User Preferences Storage');
+      console.error('User Preferences Storage Error:', storageError);
       throw storageError;
     }
   }
