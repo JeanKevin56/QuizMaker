@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Explanation Demo</title>
+    <link rel="stylesheet" href="../styles/main.css">
+    <link rel="stylesheet" href="../styles/results.css">
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        
+        .demo-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .demo-header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #e1e8ed;
+        }
+        
+        .demo-controls {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 6px;
+        }
+        
+        .demo-controls h3 {
+            margin-top: 0;
+        }
+        
+        .control-group {
+            margin-bottom: 15px;
+        }
+        
+        .control-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+        
+        .control-group input,
+        .control-group select,
+        .control-group textarea {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        .control-group textarea {
+            height: 80px;
+            resize: vertical;
+        }
+        
+        .btn {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-right: 10px;
+        }
+        
+        .btn:hover {
+            background: #2980b9;
+        }
+        
+        .btn-secondary {
+            background: #95a5a6;
+        }
+        
+        .btn-secondary:hover {
+            background: #7f8c8d;
+        }
+        
+        .status-message {
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        
+        .status-success {
+            background: #d5f4e6;
+            border: 1px solid #27ae60;
+            color: #27ae60;
+        }
+        
+        .status-error {
+            background: #fff5f5;
+            border: 1px solid #e74c3c;
+            color: #e74c3c;
+        }
+        
+        .status-info {
+            background: #e3f2fd;
+            border: 1px solid #2196f3;
+            color: #2196f3;
+        }
+    </style>
+</head>
+<body>
+    <div class="demo-container">
+        <div class="demo-header">
+            <h1>AI Explanation Demo</h1>
+            <p>Test the AI explanation generation functionality</p>
+        </div>
+        
+        <div class="demo-controls">
+            <h3>Test Configuration</h3>
+            
+            <div class="control-group">
+                <label for="questionType">Question Type:</label>
+                <select id="questionType">
+                    <option value="mcq-single">Multiple Choice (Single)</option>
+                    <option value="mcq-multiple">Multiple Choice (Multiple)</option>
+                    <option value="text-input">Text Input</option>
+                </select>
+            </div>
+            
+            <div class="control-group">
+                <label for="questionText">Question:</label>
+                <textarea id="questionText" placeholder="Enter your question here...">What is the capital of France?</textarea>
+            </div>
+            
+            <div class="control-group mcq-options">
+                <label>Options (one per line):</label>
+                <textarea id="questionOptions" placeholder="Enter options, one per line...">London
+Paris
+Berlin
+Madrid</textarea>
+            </div>
+            
+            <div class="control-group mcq-single-correct">
+                <label for="correctAnswer">Correct Answer (index):</label>
+                <input type="number" id="correctAnswer" value="1" min="0">
+            </div>
+            
+            <div class="control-group mcq-multiple-correct" style="display: none;">
+                <label for="correctAnswers">Correct Answers (comma-separated indices):</label>
+                <input type="text" id="correctAnswers" placeholder="0,2,3">
+            </div>
+            
+            <div class="control-group text-correct" style="display: none;">
+                <label for="textCorrectAnswer">Correct Answer:</label>
+                <input type="text" id="textCorrectAnswer" placeholder="Enter correct answer">
+            </div>
+            
+            <div class="control-group">
+                <label for="userAnswer">User's Answer:</label>
+                <input type="text" id="userAnswer" placeholder="Enter user's answer (e.g., 0 for first option)">
+            </div>
+            
+            <div class="control-group">
+                <label>
+                    <input type="checkbox" id="isCorrect"> Answer is correct
+                </label>
+            </div>
+            
+            <div class="control-group">
+                <label for="apiKey">Gemini API Key (optional):</label>
+                <input type="password" id="apiKey" placeholder="Enter your Gemini API key for live testing">
+            </div>
+            
+            <button class="btn" onclick="generateExplanation()">Generate Explanation</button>
+            <button class="btn btn-secondary" onclick="testFallback()">Test Fallback</button>
+            <button class="btn btn-secondary" onclick="clearCache()">Clear Cache</button>
+        </div>
+        
+        <div id="statusMessage"></div>
+        
+        <div id="resultsContainer"></div>
+    </div>
+
+    <script type="module">
+        import { AIExplanationService } from '../services/AIExplanationService.js';
+        
+        let explanationService;
+        
+        // Initialize service
+        try {
+            explanationService = new AIExplanationService();
+            showStatus('AI Explanation Service initialized successfully', 'success');
+        } catch (error) {
+            showStatus(`Failed to initialize service: ${error.message}`, 'error');
+        }
+        
+        // Make functions global for onclick handlers
+        window.generateExplanation = generateExplanation;
+        window.testFallback = testFallback;
+        window.clearCache = clearCache;
+        window.updateQuestionType = updateQuestionType;
+        
+        // Update form based on question type
+        document.getElementById('questionType').addEventListener('change', updateQuestionType);
+        updateQuestionType(); // Initialize
+        
+        function updateQuestionType() {
+            const type = document.getElementById('questionType').value;
+            const mcqOptions = document.querySelector('.mcq-options');
+            const mcqSingleCorrect = document.querySelector('.mcq-single-correct');
+            const mcqMultipleCorrect = document.querySelector('.mcq-multiple-correct');
+            const textCorrect = document.querySelector('.text-correct');
+            
+            // Hide all type-specific controls
+            mcqOptions.style.display = 'none';
+            mcqSingleCorrect.style.display = 'none';
+            mcqMultipleCorrect.style.display = 'none';
+            textCorrect.style.display = 'none';
+            
+            // Show relevant controls
+            if (type === 'mcq-single') {
+                mcqOptions.style.display = 'block';
+                mcqSingleCorrect.style.display = 'block';
+            } else if (type === 'mcq-multiple') {
+                mcqOptions.style.display = 'block';
+                mcqMultipleCorrect.style.display = 'block';
+            } else if (type === 'text-input') {
+                textCorrect.style.display = 'block';
+            }
+        }
+        
+        async function generateExplanation() {
+            if (!explanationService) {
+                showStatus('Service not initialized', 'error');
+                return;
+            }
+            
+            try {
+                showStatus('Generating explanation...', 'info');
+                
+                // Get form data
+                const question = buildQuestionFromForm();
+                const userAnswer = getUserAnswerFromForm();
+                const isCorrect = document.getElementById('isCorrect').checked;
+                const apiKey = document.getElementById('apiKey').value.trim();
+                
+                // Set API key if provided
+                if (apiKey) {
+                    // This would normally be set through the service
+                    localStorage.setItem('gemini_api_key', apiKey);
+                }
+                
+                // Generate explanation
+                const result = await explanationService.generateExplanation(question, userAnswer, isCorrect);
+                
+                displayResult(result, question, userAnswer, isCorrect);
+                
+            } catch (error) {
+                showStatus(`Error: ${error.message}`, 'error');
+                console.error('Explanation generation error:', error);
+            }
+        }
+        
+        function testFallback() {
+            if (!explanationService) {
+                showStatus('Service not initialized', 'error');
+                return;
+            }
+            
+            try {
+                const question = buildQuestionFromForm();
+                const userAnswer = getUserAnswerFromForm();
+                const isCorrect = document.getElementById('isCorrect').checked;
+                
+                const fallback = explanationService.generateFallbackExplanation(question, userAnswer, isCorrect);
+                
+                const result = {
+                    success: true,
+                    explanation: fallback,
+                    fromCache: false,
+                    generatedAt: new Date().toISOString(),
+                    isFallback: true
+                };
+                
+                displayResult(result, question, userAnswer, isCorrect);
+                showStatus('Fallback explanation generated', 'success');
+                
+            } catch (error) {
+                showStatus(`Error: ${error.message}`, 'error');
+            }
+        }
+        
+        function clearCache() {
+            if (!explanationService) {
+                showStatus('Service not initialized', 'error');
+                return;
+            }
+            
+            explanationService.clearCache();
+            showStatus('Cache cleared successfully', 'success');
+        }
+        
+        function buildQuestionFromForm() {
+            const type = document.getElementById('questionType').value;
+            const questionText = document.getElementById('questionText').value.trim();
+            
+            const question = {
+                id: 'demo-question',
+                type: type,
+                question: questionText
+            };
+            
+            if (type === 'mcq-single' || type === 'mcq-multiple') {
+                const optionsText = document.getElementById('questionOptions').value.trim();
+                question.options = optionsText.split('\n').map(opt => opt.trim()).filter(opt => opt);
+                
+                if (type === 'mcq-single') {
+                    question.correctAnswer = parseInt(document.getElementById('correctAnswer').value) || 0;
+                } else {
+                    const correctAnswersText = document.getElementById('correctAnswers').value.trim();
+                    question.correctAnswers = correctAnswersText
+                        .split(',')
+                        .map(idx => parseInt(idx.trim()))
+                        .filter(idx => !isNaN(idx));
+                }
+            } else if (type === 'text-input') {
+                question.correctAnswer = document.getElementById('textCorrectAnswer').value.trim();
+            }
+            
+            return question;
+        }
+        
+        function getUserAnswerFromForm() {
+            const type = document.getElementById('questionType').value;
+            const userAnswerText = document.getElementById('userAnswer').value.trim();
+            
+            if (!userAnswerText) return null;
+            
+            if (type === 'mcq-single') {
+                return parseInt(userAnswerText);
+            } else if (type === 'mcq-multiple') {
+                return userAnswerText.split(',').map(idx => parseInt(idx.trim())).filter(idx => !isNaN(idx));
+            } else {
+                return userAnswerText;
+            }
+        }
+        
+        function displayResult(result, question, userAnswer, isCorrect) {
+            const container = document.getElementById('resultsContainer');
+            
+            const statusClass = result.success ? 'success' : 'error';
+            const cacheIndicator = result.fromCache ? ' (from cache)' : '';
+            const fallbackIndicator = result.isFallback ? ' (fallback)' : '';
+            
+            container.innerHTML = `
+                <div class="question-result ${isCorrect ? 'correct' : 'incorrect'}">
+                    <div class="question-header">
+                        <span class="question-number">Demo Question</span>
+                        <span class="question-status ${isCorrect ? 'correct' : 'incorrect'}">
+                            <span class="status-icon">${isCorrect ? '✓' : '✗'}</span>
+                            <span class="status-text">${isCorrect ? 'Correct' : 'Incorrect'}</span>
+                        </span>
+                    </div>
+                    
+                    <div class="question-content">
+                        <div class="question-text">${question.question}</div>
+                        ${question.options ? `
+                            <div class="question-options">
+                                ${question.options.map((opt, idx) => `<div>${String.fromCharCode(65 + idx)}. ${opt}</div>`).join('')}
+                            </div>
+                        ` : ''}
+                    </div>
+                    
+                    <div class="answer-comparison">
+                        <div class="user-answer">
+                            <h4>Your Answer:</h4>
+                            <div class="answer-content">
+                                ${formatAnswer(question, userAnswer)}
+                            </div>
+                        </div>
+                        
+                        ${!isCorrect ? `
+                            <div class="correct-answer">
+                                <h4>Correct Answer:</h4>
+                                <div class="answer-content correct">
+                                    ${formatCorrectAnswer(question)}
+                                </div>
+                            </div>
+                        ` : ''}
+                    </div>
+                    
+                    <div class="explanation-section">
+                        <h4>AI Explanation:</h4>
+                        <div class="explanation-content">
+                            <div class="ai-explanation ${result.fromCache ? 'from-cache' : ''} ${result.success ? '' : 'error'}">
+                                <h5>
+                                    <span class="ai-icon">${result.success ? '🤖' : '⚠️'}</span>
+                                    ${result.success ? 'AI Explanation' : 'Explanation Error'}
+                                    ${result.fromCache ? '<span class="cache-indicator">(cached)</span>' : ''}
+                                    ${result.isFallback ? '<span class="cache-indicator">(fallback)</span>' : ''}
+                                </h5>
+                                <div class="explanation-text">
+                                    ${result.explanation}
+                                </div>
+                                <div class="explanation-meta">
+                                    <small>Generated: ${new Date(result.generatedAt).toLocaleString()}</small>
+                                    ${result.error ? `<br><small>Error: ${result.error}</small>` : ''}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            showStatus(`Explanation ${result.success ? 'generated' : 'failed'}${cacheIndicator}${fallbackIndicator}`, statusClass);
+        }
+        
+        function formatAnswer(question, userAnswer) {
+            if (userAnswer === null || userAnswer === undefined) {
+                return '<em>No answer provided</em>';
+            }
+            
+            if (question.type === 'mcq-single') {
+                return question.options[userAnswer] || 'Invalid option';
+            } else if (question.type === 'mcq-multiple') {
+                if (Array.isArray(userAnswer)) {
+                    return userAnswer.map(idx => question.options[idx] || 'Invalid').join(', ');
+                }
+                return 'Invalid answer';
+            } else {
+                return String(userAnswer);
+            }
+        }
+        
+        function formatCorrectAnswer(question) {
+            if (question.type === 'mcq-single') {
+                return question.options[question.correctAnswer] || 'Invalid';
+            } else if (question.type === 'mcq-multiple') {
+                return question.correctAnswers.map(idx => question.options[idx] || 'Invalid').join(', ');
+            } else {
+                return question.correctAnswer;
+            }
+        }
+        
+        function showStatus(message, type = 'info') {
+            const statusDiv = document.getElementById('statusMessage');
+            statusDiv.innerHTML = `<div class="status-message status-${type}">${message}</div>`;
+            
+            // Auto-hide after 5 seconds for success messages
+            if (type === 'success') {
+                setTimeout(() => {
+                    statusDiv.innerHTML = '';
+                }, 5000);
+            }
+        }
+    </script>
+</body>
+</html>

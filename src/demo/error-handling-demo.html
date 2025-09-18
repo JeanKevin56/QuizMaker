@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Error Handling Demo - Quiz Platform</title>
+    <link rel="stylesheet" href="../styles/main.css">
+    <link rel="stylesheet" href="../styles/error-handling.css">
+</head>
+<body>
+    <div class="container" style="max-width: 800px; margin: 0 auto; padding: 2rem;">
+        <h1>Error Handling System Demo</h1>
+        
+        <div class="demo-section">
+            <h2>Error Handler</h2>
+            <div class="demo-controls">
+                <button id="trigger-error" class="btn btn-error">Trigger Error</button>
+                <button id="trigger-network-error" class="btn btn-warning">Network Error</button>
+                <button id="trigger-api-error" class="btn btn-warning">API Error</button>
+                <button id="show-notification" class="btn btn-primary">Show Notification</button>
+                <button id="show-persistent" class="btn btn-primary">Persistent Notification</button>
+            </div>
+        </div>
+
+        <div class="demo-section">
+            <h2>Offline Detection</h2>
+            <div class="demo-controls">
+                <button id="simulate-offline" class="btn btn-warning">Simulate Offline</button>
+                <button id="simulate-online" class="btn btn-success">Simulate Online</button>
+                <button id="check-connection" class="btn btn-primary">Check Connection</button>
+                <button id="show-connection-status" class="btn btn-primary">Show Connection Status</button>
+            </div>
+        </div>
+
+        <div class="demo-section">
+            <h2>Quota Monitor</h2>
+            <div class="demo-controls">
+                <button id="update-quota-80" class="btn btn-warning">80% Usage</button>
+                <button id="update-quota-95" class="btn btn-error">95% Usage</button>
+                <button id="quota-exceeded" class="btn btn-error">Quota Exceeded</button>
+                <button id="show-quota-status" class="btn btn-primary">Show Quota Status</button>
+                <button id="clear-quota" class="btn">Clear Quota Data</button>
+            </div>
+        </div>
+
+        <div class="demo-section">
+            <h2>Error Log</h2>
+            <div class="demo-controls">
+                <button id="show-errors" class="btn btn-primary">Show Stored Errors</button>
+                <button id="clear-errors" class="btn">Clear Errors</button>
+            </div>
+            <div id="error-log" class="error-log" style="margin-top: 1rem; padding: 1rem; background: var(--bg-secondary); border-radius: 8px; max-height: 300px; overflow-y: auto;"></div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { errorHandler, ERROR_TYPES, ERROR_SEVERITY } from '../services/ErrorHandler.js';
+        import { offlineIndicator } from '../components/OfflineIndicator.js';
+        import { quotaMonitor } from '../components/QuotaMonitor.js';
+
+        // Error Handler Demo
+        document.getElementById('trigger-error').addEventListener('click', () => {
+            errorHandler.handleError(new Error('Demo error occurred'), 'Demo Context');
+        });
+
+        document.getElementById('trigger-network-error').addEventListener('click', () => {
+            const error = new Error('Network connection failed');
+            error.type = ERROR_TYPES.NETWORK;
+            errorHandler.handleError(error, 'Network Demo');
+        });
+
+        document.getElementById('trigger-api-error').addEventListener('click', () => {
+            const error = new Error('API key is invalid');
+            error.type = ERROR_TYPES.API;
+            errorHandler.handleError(error, 'API Demo');
+        });
+
+        document.getElementById('show-notification').addEventListener('click', () => {
+            errorHandler.showNotification('This is a demo notification!', 'info');
+        });
+
+        document.getElementById('show-persistent').addEventListener('click', () => {
+            errorHandler.showNotification('This notification will stay until dismissed', 'warning', {
+                persistent: true,
+                actions: [
+                    { text: 'Action 1', action: () => alert('Action 1 clicked!') },
+                    { text: 'Action 2', action: () => alert('Action 2 clicked!') }
+                ]
+            });
+        });
+
+        // Offline Detection Demo
+        document.getElementById('simulate-offline').addEventListener('click', () => {
+            offlineIndicator.isOnline = false;
+            offlineIndicator.updateStatus(false);
+        });
+
+        document.getElementById('simulate-online').addEventListener('click', () => {
+            offlineIndicator.isOnline = true;
+            offlineIndicator.updateStatus(true);
+            offlineIndicator.showReconnectedMessage();
+        });
+
+        document.getElementById('check-connection').addEventListener('click', async () => {
+            const isOnline = await offlineIndicator.checkConnection();
+            errorHandler.showNotification(`Connection status: ${isOnline ? 'Online' : 'Offline'}`, 'info');
+        });
+
+        document.getElementById('show-connection-status').addEventListener('click', () => {
+            offlineIndicator.showConnectionStatus();
+        });
+
+        // Quota Monitor Demo
+        document.getElementById('update-quota-80').addEventListener('click', () => {
+            quotaMonitor.updateQuota('Demo API', {
+                usage: 0.8,
+                remaining: 20,
+                limit: 100,
+                resetTime: Math.floor(Date.now() / 1000) + 3600 // 1 hour from now
+            });
+        });
+
+        document.getElementById('update-quota-95').addEventListener('click', () => {
+            quotaMonitor.updateQuota('Demo API', {
+                usage: 0.95,
+                remaining: 5,
+                limit: 100,
+                resetTime: Math.floor(Date.now() / 1000) + 3600
+            });
+        });
+
+        document.getElementById('quota-exceeded').addEventListener('click', () => {
+            quotaMonitor.handleQuotaExceeded('Demo API', {
+                resetTime: Math.floor(Date.now() / 1000) + 3600,
+                retryAfter: 3600
+            });
+        });
+
+        document.getElementById('show-quota-status').addEventListener('click', () => {
+            const status = quotaMonitor.getAllQuotaStatuses();
+            const statusText = Object.keys(status).length > 0 
+                ? JSON.stringify(status, null, 2)
+                : 'No quota data available';
+            
+            errorHandler.showNotification(`Quota Status:\n${statusText}`, 'info');
+        });
+
+        document.getElementById('clear-quota').addEventListener('click', () => {
+            quotaMonitor.clearAllQuotaData();
+            errorHandler.showNotification('Quota data cleared', 'success');
+        });
+
+        // Error Log Demo
+        document.getElementById('show-errors').addEventListener('click', () => {
+            const errors = errorHandler.getStoredErrors();
+            const errorLog = document.getElementById('error-log');
+            
+            if (errors.length === 0) {
+                errorLog.innerHTML = '<p>No errors stored</p>';
+            } else {
+                errorLog.innerHTML = errors.map(error => `
+                    <div style="margin-bottom: 1rem; padding: 0.5rem; border: 1px solid var(--border-color); border-radius: 4px;">
+                        <strong>${error.type}</strong> - ${error.message}<br>
+                        <small>Time: ${new Date(error.timestamp).toLocaleString()}</small><br>
+                        <small>User Message: ${error.userMessage}</small>
+                    </div>
+                `).join('');
+            }
+        });
+
+        document.getElementById('clear-errors').addEventListener('click', () => {
+            errorHandler.clearStoredErrors();
+            document.getElementById('error-log').innerHTML = '<p>Errors cleared</p>';
+            errorHandler.showNotification('Error log cleared', 'success');
+        });
+
+        // Add some demo styling
+        const style = document.createElement('style');
+        style.textContent = `
+            .demo-section {
+                margin-bottom: 2rem;
+                padding: 1.5rem;
+                border: 1px solid var(--border-color);
+                border-radius: 8px;
+                background: var(--bg-primary);
+            }
+            
+            .demo-controls {
+                display: flex;
+                gap: 0.5rem;
+                flex-wrap: wrap;
+                margin-top: 1rem;
+            }
+            
+            .demo-controls .btn {
+                padding: 0.5rem 1rem;
+                font-size: 0.875rem;
+            }
+            
+            .error-log {
+                font-family: monospace;
+                font-size: 0.875rem;
+                line-height: 1.4;
+            }
+        `;
+        document.head.appendChild(style);
+
+        console.log('Error Handling Demo loaded successfully!');
+        console.log('Available instances:', { errorHandler, offlineIndicator, quotaMonitor });
+    </script>
+</body>
+</html>

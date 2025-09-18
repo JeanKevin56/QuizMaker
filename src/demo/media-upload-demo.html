@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Media Upload Demo - Quiz Platform</title>
+    <link rel="stylesheet" href="../styles/main.css">
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            background: var(--bg-secondary);
+        }
+        
+        .demo-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: var(--bg-primary);
+            border-radius: 8px;
+            box-shadow: var(--shadow-lg);
+            overflow: hidden;
+        }
+        
+        .demo-header {
+            background: var(--primary-color);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .demo-content {
+            padding: 30px;
+        }
+        
+        .demo-controls {
+            padding: 20px;
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        
+        .demo-controls button {
+            padding: 8px 16px;
+            border: 1px solid var(--border-color);
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+        
+        .demo-controls button:hover {
+            background: var(--bg-tertiary);
+        }
+        
+        .demo-output {
+            padding: 20px;
+            background: var(--bg-secondary);
+            border-top: 1px solid var(--border-color);
+            margin-top: 20px;
+        }
+        
+        .demo-output h4 {
+            margin: 0 0 12px 0;
+            color: var(--text-primary);
+        }
+        
+        .demo-output pre {
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            padding: 16px;
+            overflow-x: auto;
+            font-size: 0.9rem;
+            color: var(--text-primary);
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        .demo-section {
+            margin-bottom: 30px;
+        }
+        
+        .demo-section h3 {
+            margin: 0 0 16px 0;
+            color: var(--text-primary);
+            font-size: 1.2rem;
+        }
+        
+        .demo-info {
+            background: var(--info-background);
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            border-radius: 6px;
+            padding: 16px;
+            margin-bottom: 20px;
+        }
+        
+        .demo-info p {
+            margin: 0;
+            color: var(--info-text);
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+    </style>
+</head>
+<body>
+    <div class="demo-container">
+        <div class="demo-header">
+            <h1>Media Upload Demo</h1>
+            <p>Interactive demonstration of the image upload functionality</p>
+        </div>
+        
+        <div class="demo-controls">
+            <button id="clear-media-btn">Clear Media</button>
+            <button id="set-sample-media-btn">Set Sample Media</button>
+            <button id="toggle-theme-btn">Toggle Theme</button>
+            <button id="reset-demo-btn">Reset Demo</button>
+        </div>
+        
+        <div class="demo-content">
+            <div class="demo-info">
+                <p>
+                    📷 <strong>Try uploading an image:</strong> Click the upload area, drag and drop an image, or use the browse button.<br>
+                    📏 <strong>Supported formats:</strong> JPEG, PNG, GIF, WebP (max 5MB)<br>
+                    💾 <strong>Storage:</strong> Images are stored locally in your browser using IndexedDB
+                </p>
+            </div>
+            
+            <div class="demo-section">
+                <h3>Media Upload Component</h3>
+                <div id="media-upload-container">
+                    <!-- Media upload component will be rendered here -->
+                </div>
+            </div>
+        </div>
+        
+        <div class="demo-output">
+            <h4>Media Data Output:</h4>
+            <pre id="media-output">No media uploaded yet...</pre>
+        </div>
+    </div>
+
+    <script type="module">
+        import { MediaUpload } from '../components/MediaUpload.js';
+        import { MEDIA_TYPES } from '../models/types.js';
+
+        // Mock StorageManager for demo
+        class MockStorageManager {
+            constructor() {
+                this.mediaStore = new Map();
+                this.isInitialized = false;
+            }
+
+            async initialize() {
+                this.isInitialized = true;
+                console.log('Mock StorageManager initialized');
+            }
+
+            async storeMedia(mediaId, data, mimeType) {
+                this.mediaStore.set(mediaId, { data, mimeType, createdAt: new Date() });
+                console.log('Media stored:', mediaId);
+                return mediaId;
+            }
+
+            async getMedia(mediaId) {
+                return this.mediaStore.get(mediaId) || null;
+            }
+
+            async deleteMedia(mediaId) {
+                const deleted = this.mediaStore.delete(mediaId);
+                console.log('Media deleted:', mediaId, deleted);
+                return deleted;
+            }
+        }
+
+        let currentMediaUpload = null;
+        const container = document.getElementById('media-upload-container');
+        const output = document.getElementById('media-output');
+        const mockStorageManager = new MockStorageManager();
+
+        // Sample media for demo
+        const sampleMedia = {
+            id: 'sample-media-123',
+            type: MEDIA_TYPES.IMAGE,
+            url: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjEyMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjEyMCIgZmlsbD0iIzMzNzNkYyIvPgogIDx0ZXh0IHg9IjEwMCIgeT0iNjAiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNCIgZmlsbD0id2hpdGUiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5TYW1wbGUgSW1hZ2U8L3RleHQ+Cjwvc3ZnPg==',
+            filename: 'sample-image.svg',
+            size: 245,
+            mimeType: 'image/svg+xml'
+        };
+
+        // Initialize media upload
+        function initMediaUpload(existingMedia = null) {
+            if (currentMediaUpload) {
+                container.innerHTML = '';
+            }
+            
+            currentMediaUpload = new MediaUpload(mockStorageManager);
+            currentMediaUpload.init(
+                container,
+                existingMedia,
+                handleMediaChange
+            );
+            
+            updateOutput(existingMedia);
+        }
+
+        // Handle media change
+        function handleMediaChange(media) {
+            console.log('Media changed:', media);
+            updateOutput(media);
+            
+            if (media) {
+                showNotification('Media uploaded successfully!', 'success');
+            } else {
+                showNotification('Media removed successfully!', 'info');
+            }
+        }
+
+        // Update output display
+        function updateOutput(media) {
+            if (media) {
+                // Create a clean version for display (truncate base64 data)
+                const displayMedia = { ...media };
+                if (displayMedia.url && displayMedia.url.length > 100) {
+                    displayMedia.url = displayMedia.url.substring(0, 100) + '... [truncated]';
+                }
+                output.textContent = JSON.stringify(displayMedia, null, 2);
+            } else {
+                output.textContent = 'No media uploaded yet...';
+            }
+        }
+
+        // Show notification
+        function showNotification(message, type = 'info') {
+            // Create a simple notification
+            const notification = document.createElement('div');
+            notification.className = `alert alert-${type}`;
+            notification.style.position = 'fixed';
+            notification.style.top = '20px';
+            notification.style.right = '20px';
+            notification.style.zIndex = '1000';
+            notification.style.maxWidth = '300px';
+            notification.innerHTML = `
+                <div class="alert-content">${message}</div>
+                <button class="alert-close">&times;</button>
+            `;
+            
+            document.body.appendChild(notification);
+            
+            // Auto-remove after 3 seconds
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.remove();
+                }
+            }, 3000);
+            
+            // Manual close
+            const closeBtn = notification.querySelector('.alert-close');
+            if (closeBtn) {
+                closeBtn.addEventListener('click', () => {
+                    notification.remove();
+                });
+            }
+        }
+
+        // Clear media
+        function clearMedia() {
+            if (currentMediaUpload) {
+                currentMediaUpload.clear();
+                updateOutput(null);
+            }
+        }
+
+        // Set sample media
+        function setSampleMedia() {
+            if (currentMediaUpload) {
+                currentMediaUpload.setMedia(sampleMedia);
+                updateOutput(sampleMedia);
+                showNotification('Sample media loaded!', 'info');
+            }
+        }
+
+        // Toggle theme
+        function toggleTheme() {
+            document.body.classList.toggle('theme-dark');
+        }
+
+        // Reset demo
+        function resetDemo() {
+            initMediaUpload();
+        }
+
+        // Event listeners
+        document.getElementById('clear-media-btn').addEventListener('click', clearMedia);
+        document.getElementById('set-sample-media-btn').addEventListener('click', setSampleMedia);
+        document.getElementById('toggle-theme-btn').addEventListener('click', toggleTheme);
+        document.getElementById('reset-demo-btn').addEventListener('click', resetDemo);
+
+        // Initialize with empty media upload
+        initMediaUpload();
+
+        // Add some helpful console logs
+        console.log('Media Upload Demo initialized');
+        console.log('Try uploading an image to see the component in action!');
+        console.log('Supported formats:', currentMediaUpload.getSupportedTypes());
+        console.log('Max file size:', currentMediaUpload.getMaxFileSize() / (1024 * 1024), 'MB');
+    </script>
+</body>
+</html>

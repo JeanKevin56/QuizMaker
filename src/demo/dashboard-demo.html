@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Dashboard Demo</title>
+    <link rel="stylesheet" href="../styles/main.css">
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            background: var(--bg-secondary);
+        }
+        
+        .demo-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: var(--bg-primary);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-lg);
+            overflow: hidden;
+        }
+        
+        .demo-header {
+            background: var(--primary-color);
+            color: white;
+            padding: var(--spacing-lg);
+            text-align: center;
+        }
+        
+        .demo-content {
+            padding: var(--spacing-lg);
+        }
+        
+        .demo-controls {
+            background: var(--bg-secondary);
+            padding: var(--spacing-md);
+            margin-bottom: var(--spacing-lg);
+            border-radius: var(--radius-md);
+            display: flex;
+            gap: var(--spacing-md);
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        
+        .theme-toggle {
+            padding: var(--spacing-sm) var(--spacing-md);
+            border: 1px solid var(--border-color);
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            border-radius: var(--radius-md);
+            cursor: pointer;
+        }
+        
+        .sample-data-btn {
+            padding: var(--spacing-sm) var(--spacing-md);
+            border: none;
+            background: var(--success-color);
+            color: white;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+        }
+        
+        .clear-data-btn {
+            padding: var(--spacing-sm) var(--spacing-md);
+            border: none;
+            background: var(--error-color);
+            color: white;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="demo-container">
+        <div class="demo-header">
+            <h1>Quiz Dashboard Demo</h1>
+            <p>Interactive demonstration of the quiz management dashboard</p>
+        </div>
+        
+        <div class="demo-content">
+            <div class="demo-controls">
+                <button class="theme-toggle" onclick="toggleTheme()">Toggle Dark Theme</button>
+                <button class="sample-data-btn" onclick="loadSampleData()">Load Sample Data</button>
+                <button class="clear-data-btn" onclick="clearAllData()">Clear All Data</button>
+                <span id="status-message" style="color: var(--text-secondary); font-size: var(--font-size-sm);"></span>
+            </div>
+            
+            <div id="dashboard-container"></div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { QuizDashboard } from '../components/QuizDashboard.js';
+        import { StorageManager } from '../services/StorageManager.js';
+
+        let dashboard;
+        let storageManager;
+
+        // Initialize demo
+        async function initDemo() {
+            try {
+                storageManager = new StorageManager();
+                await storageManager.initialize();
+                
+                dashboard = new QuizDashboard();
+                const container = document.getElementById('dashboard-container');
+                await dashboard.init(container);
+                
+                showStatus('Dashboard demo loaded successfully!', 'success');
+            } catch (error) {
+                console.error('Failed to initialize demo:', error);
+                showStatus('Failed to initialize demo: ' + error.message, 'error');
+            }
+        }
+
+        // Load sample data
+        window.loadSampleData = async function() {
+            try {
+                const sampleQuizzes = [
+                    {
+                        id: 'demo-quiz-1',
+                        title: 'JavaScript Fundamentals',
+                        description: 'Test your knowledge of JavaScript basics including variables, functions, and control structures.',
+                        questions: [
+                            {
+                                id: 'q1',
+                                type: 'mcq-single',
+                                question: 'What is the correct way to declare a variable in JavaScript?',
+                                options: ['var x = 5;', 'variable x = 5;', 'v x = 5;', 'declare x = 5;'],
+                                correctAnswer: 0,
+                                explanation: 'The var keyword is used to declare variables in JavaScript.'
+                            },
+                            {
+                                id: 'q2',
+                                type: 'mcq-multiple',
+                                question: 'Which of the following are JavaScript data types?',
+                                options: ['String', 'Number', 'Boolean', 'Character'],
+                                correctAnswers: [0, 1, 2],
+                                explanation: 'JavaScript has String, Number, and Boolean as primitive data types. Character is not a separate type.'
+                            },
+                            {
+                                id: 'q3',
+                                type: 'text-input',
+                                question: 'What method is used to add an element to the end of an array?',
+                                correctAnswer: 'push',
+                                caseSensitive: false,
+                                explanation: 'The push() method adds one or more elements to the end of an array.'
+                            }
+                        ],
+                        createdAt: new Date('2024-01-15'),
+                        updatedAt: new Date('2024-01-16'),
+                        settings: {
+                            shuffleQuestions: false,
+                            showExplanations: true
+                        }
+                    },
+                    {
+                        id: 'demo-quiz-2',
+                        title: 'HTML & CSS Basics',
+                        description: 'Fundamental concepts of HTML structure and CSS styling.',
+                        questions: [
+                            {
+                                id: 'q4',
+                                type: 'mcq-single',
+                                question: 'Which HTML tag is used for the largest heading?',
+                                options: ['<h6>', '<h1>', '<header>', '<heading>'],
+                                correctAnswer: 1,
+                                explanation: 'The <h1> tag represents the largest heading in HTML.'
+                            },
+                            {
+                                id: 'q5',
+                                type: 'mcq-single',
+                                question: 'What does CSS stand for?',
+                                options: ['Computer Style Sheets', 'Cascading Style Sheets', 'Creative Style Sheets', 'Colorful Style Sheets'],
+                                correctAnswer: 1,
+                                explanation: 'CSS stands for Cascading Style Sheets.'
+                            }
+                        ],
+                        createdAt: new Date('2024-01-10'),
+                        updatedAt: new Date('2024-01-12'),
+                        settings: {
+                            shuffleQuestions: true,
+                            showExplanations: true
+                        }
+                    },
+                    {
+                        id: 'demo-quiz-3',
+                        title: 'React Components',
+                        description: 'Understanding React component lifecycle and state management.',
+                        questions: [
+                            {
+                                id: 'q6',
+                                type: 'mcq-single',
+                                question: 'What is JSX?',
+                                options: ['A JavaScript library', 'A syntax extension for JavaScript', 'A CSS framework', 'A database'],
+                                correctAnswer: 1,
+                                explanation: 'JSX is a syntax extension for JavaScript that allows you to write HTML-like code in React.'
+                            }
+                        ],
+                        createdAt: new Date('2024-01-20'),
+                        updatedAt: new Date(),
+                        settings: {
+                            shuffleQuestions: false,
+                            showExplanations: true
+                        }
+                    },
+                    {
+                        id: 'demo-quiz-4',
+                        title: 'Database Design',
+                        description: 'Principles of relational database design and normalization.',
+                        questions: [
+                            {
+                                id: 'q7',
+                                type: 'text-input',
+                                question: 'What does SQL stand for?',
+                                correctAnswer: 'Structured Query Language',
+                                caseSensitive: false,
+                                explanation: 'SQL stands for Structured Query Language, used for managing relational databases.'
+                            },
+                            {
+                                id: 'q8',
+                                type: 'mcq-multiple',
+                                question: 'Which of the following are SQL commands?',
+                                options: ['SELECT', 'INSERT', 'DELETE', 'PRINT'],
+                                correctAnswers: [0, 1, 2],
+                                explanation: 'SELECT, INSERT, and DELETE are standard SQL commands. PRINT is not a standard SQL command.'
+                            }
+                        ],
+                        createdAt: new Date('2024-01-05'),
+                        updatedAt: new Date('2024-01-08'),
+                        settings: {
+                            shuffleQuestions: true,
+                            showExplanations: true
+                        }
+                    }
+                ];
+
+                // Store sample quizzes
+                for (const quiz of sampleQuizzes) {
+                    await storageManager.storeQuiz(quiz);
+                }
+
+                // Reload dashboard
+                await dashboard.loadQuizzes();
+                dashboard.render();
+                
+                showStatus('Sample data loaded successfully!', 'success');
+            } catch (error) {
+                console.error('Failed to load sample data:', error);
+                showStatus('Failed to load sample data: ' + error.message, 'error');
+            }
+        };
+
+        // Clear all data
+        window.clearAllData = async function() {
+            if (confirm('Are you sure you want to clear all data? This cannot be undone.')) {
+                try {
+                    await storageManager.clearAllData(true);
+                    await dashboard.loadQuizzes();
+                    dashboard.render();
+                    showStatus('All data cleared successfully!', 'success');
+                } catch (error) {
+                    console.error('Failed to clear data:', error);
+                    showStatus('Failed to clear data: ' + error.message, 'error');
+                }
+            }
+        };
+
+        // Toggle theme
+        window.toggleTheme = function() {
+            document.body.classList.toggle('theme-dark');
+            const isDark = document.body.classList.contains('theme-dark');
+            showStatus(`Switched to ${isDark ? 'dark' : 'light'} theme`, 'info');
+        };
+
+        // Show status message
+        function showStatus(message, type = 'info') {
+            const statusElement = document.getElementById('status-message');
+            statusElement.textContent = message;
+            statusElement.style.color = type === 'success' ? 'var(--success-color)' : 
+                                      type === 'error' ? 'var(--error-color)' : 
+                                      'var(--text-secondary)';
+            
+            setTimeout(() => {
+                statusElement.textContent = '';
+            }, 3000);
+        }
+
+        // Initialize demo when page loads
+        initDemo();
+    </script>
+</body>
+</html>

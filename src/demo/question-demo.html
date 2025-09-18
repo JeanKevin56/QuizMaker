@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Question Renderer Demo</title>
+    <link rel="stylesheet" href="../styles/main.css">
+    <style>
+        .demo-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .demo-section {
+            margin-bottom: 3rem;
+        }
+        
+        .demo-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--primary-color);
+        }
+        
+        .answer-display {
+            margin-top: 1rem;
+            padding: 1rem;
+            background-color: var(--bg-secondary);
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-color);
+        }
+        
+        .answer-display strong {
+            color: var(--primary-color);
+        }
+    </style>
+</head>
+<body>
+    <div class="demo-container">
+        <h1>Question Renderer Components Demo</h1>
+        <p>This demo showcases the different question types and their rendering.</p>
+        
+        <div class="demo-section">
+            <h2 class="demo-title">Multiple Choice Single</h2>
+            <div id="mcq-single-container"></div>
+            <div id="mcq-single-answer" class="answer-display">
+                <strong>Selected Answer:</strong> <span id="mcq-single-value">None</span>
+            </div>
+        </div>
+        
+        <div class="demo-section">
+            <h2 class="demo-title">Multiple Choice Multiple</h2>
+            <div id="mcq-multiple-container"></div>
+            <div id="mcq-multiple-answer" class="answer-display">
+                <strong>Selected Answers:</strong> <span id="mcq-multiple-value">None</span>
+            </div>
+        </div>
+        
+        <div class="demo-section">
+            <h2 class="demo-title">Text Input (Case Insensitive)</h2>
+            <div id="text-input-container"></div>
+            <div id="text-input-answer" class="answer-display">
+                <strong>Answer:</strong> <span id="text-input-value">None</span>
+            </div>
+        </div>
+        
+        <div class="demo-section">
+            <h2 class="demo-title">Text Input (Case Sensitive)</h2>
+            <div id="text-input-case-container"></div>
+            <div id="text-input-case-answer" class="answer-display">
+                <strong>Answer:</strong> <span id="text-input-case-value">None</span>
+            </div>
+        </div>
+        
+        <div class="demo-section">
+            <h2 class="demo-title">Question with Image</h2>
+            <div id="image-question-container"></div>
+            <div id="image-question-answer" class="answer-display">
+                <strong>Selected Answer:</strong> <span id="image-question-value">None</span>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { createQuestionRenderer } from '../components/QuestionRenderer.js';
+        import { QUESTION_TYPES } from '../models/types.js';
+
+        // Sample questions
+        const questions = {
+            mcqSingle: {
+                id: 'demo-mcq-single',
+                type: QUESTION_TYPES.MCQ_SINGLE,
+                question: 'What is the capital of France?',
+                options: ['London', 'Berlin', 'Paris', 'Madrid'],
+                correctAnswer: 2,
+                explanation: 'Paris is the capital of France.'
+            },
+            
+            mcqMultiple: {
+                id: 'demo-mcq-multiple',
+                type: QUESTION_TYPES.MCQ_MULTIPLE,
+                question: 'Which of the following are programming languages?',
+                options: ['JavaScript', 'HTML', 'Python', 'CSS', 'Java'],
+                correctAnswers: [0, 2, 4],
+                explanation: 'JavaScript, Python, and Java are programming languages. HTML and CSS are markup and styling languages.'
+            },
+            
+            textInput: {
+                id: 'demo-text-input',
+                type: QUESTION_TYPES.TEXT_INPUT,
+                question: 'What is 2 + 2?',
+                correctAnswer: '4',
+                caseSensitive: false,
+                explanation: '2 + 2 equals 4.'
+            },
+            
+            textInputCase: {
+                id: 'demo-text-input-case',
+                type: QUESTION_TYPES.TEXT_INPUT,
+                question: 'What is the name of the JavaScript runtime built on Chrome\'s V8 engine?',
+                correctAnswer: 'Node.js',
+                caseSensitive: true,
+                explanation: 'Node.js is the JavaScript runtime built on Chrome\'s V8 engine.'
+            },
+            
+            imageQuestion: {
+                id: 'demo-image-question',
+                type: QUESTION_TYPES.MCQ_SINGLE,
+                question: 'What color is shown in this image?',
+                options: ['Red', 'Green', 'Blue', 'Yellow'],
+                correctAnswer: 2,
+                explanation: 'The image shows a blue color.',
+                media: {
+                    type: 'image',
+                    url: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iIzAwN2NmZiIvPgogIDx0ZXh0IHg9IjEwMCIgeT0iNTUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIyMCIgZmlsbD0id2hpdGUiIHRleHQtYW5jaG9yPSJtaWRkbGUiPkJsdWU8L3RleHQ+Cjwvc3ZnPg=='
+                }
+            }
+        };
+
+        // Answer change handlers
+        function createAnswerHandler(containerId, valueId) {
+            return (questionId, answer) => {
+                const valueElement = document.getElementById(valueId);
+                if (Array.isArray(answer)) {
+                    valueElement.textContent = answer.length > 0 ? `[${answer.join(', ')}]` : 'None';
+                } else {
+                    valueElement.textContent = answer !== null && answer !== undefined ? answer : 'None';
+                }
+            };
+        }
+
+        // Render all questions
+        function renderQuestions() {
+            // MCQ Single
+            const mcqSingleRenderer = createQuestionRenderer(
+                questions.mcqSingle, 
+                createAnswerHandler('mcq-single-container', 'mcq-single-value')
+            );
+            document.getElementById('mcq-single-container').appendChild(mcqSingleRenderer.render());
+
+            // MCQ Multiple
+            const mcqMultipleRenderer = createQuestionRenderer(
+                questions.mcqMultiple, 
+                createAnswerHandler('mcq-multiple-container', 'mcq-multiple-value')
+            );
+            document.getElementById('mcq-multiple-container').appendChild(mcqMultipleRenderer.render());
+
+            // Text Input
+            const textInputRenderer = createQuestionRenderer(
+                questions.textInput, 
+                createAnswerHandler('text-input-container', 'text-input-value')
+            );
+            document.getElementById('text-input-container').appendChild(textInputRenderer.render());
+
+            // Text Input Case Sensitive
+            const textInputCaseRenderer = createQuestionRenderer(
+                questions.textInputCase, 
+                createAnswerHandler('text-input-case-container', 'text-input-case-value')
+            );
+            document.getElementById('text-input-case-container').appendChild(textInputCaseRenderer.render());
+
+            // Image Question
+            const imageQuestionRenderer = createQuestionRenderer(
+                questions.imageQuestion, 
+                createAnswerHandler('image-question-container', 'image-question-value')
+            );
+            document.getElementById('image-question-container').appendChild(imageQuestionRenderer.render());
+        }
+
+        // Initialize demo
+        document.addEventListener('DOMContentLoaded', renderQuestions);
+    </script>
+</body>
+</html>

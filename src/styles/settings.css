@@ -1,0 +1,441 @@
+/* Settings Component Styles */
+
+.settings-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: var(--spacing-lg);
+}
+
+.settings-header {
+    text-align: center;
+    margin-bottom: var(--spacing-2xl);
+}
+
+.settings-header h1 {
+    font-size: var(--font-size-3xl);
+    color: var(--text-primary);
+    margin-bottom: var(--spacing-sm);
+}
+
+.settings-header p {
+    color: var(--text-secondary);
+    font-size: var(--font-size-lg);
+    margin: 0;
+}
+
+.settings-content {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-2xl);
+}
+
+/* Settings Section */
+.settings-section {
+    background: var(--card-background);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-xl);
+    box-shadow: var(--shadow-sm);
+}
+
+.section-header {
+    margin-bottom: var(--spacing-lg);
+    padding-bottom: var(--spacing-md);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.section-header h2 {
+    font-size: var(--font-size-xl);
+    color: var(--text-primary);
+    margin-bottom: var(--spacing-xs);
+}
+
+.section-header p {
+    color: var(--text-secondary);
+    font-size: var(--font-size-base);
+    margin: 0;
+}
+
+/* API Keys Form */
+.api-keys-form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-lg);
+}
+
+.api-key-input {
+    font-family: 'Courier New', monospace;
+    font-size: var(--font-size-sm);
+}
+
+.optional-label {
+    color: var(--text-muted);
+    font-weight: normal;
+    font-size: var(--font-size-sm);
+}
+
+.form-help {
+    margin-top: var(--spacing-sm);
+}
+
+.form-help p {
+    font-size: var(--font-size-sm);
+    color: var(--text-muted);
+    margin-bottom: var(--spacing-xs);
+}
+
+.form-help a {
+    color: var(--primary-color);
+    text-decoration: none;
+}
+
+.form-help a:hover {
+    text-decoration: underline;
+}
+
+.api-key-actions {
+    display: flex;
+    gap: var(--spacing-sm);
+    flex-wrap: wrap;
+}
+
+/* Theme Selector */
+.theme-selector {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+}
+
+.theme-options {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: var(--spacing-lg);
+}
+
+.theme-option {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--spacing-md);
+    padding: var(--spacing-lg);
+    border: 2px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background: var(--bg-secondary);
+}
+
+.theme-option:hover {
+    border-color: var(--border-hover);
+    background: var(--bg-primary);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.theme-option.selected {
+    border-color: var(--primary-color);
+    background: var(--primary-color-alpha);
+    box-shadow: var(--shadow-md);
+}
+
+.theme-preview {
+    width: 120px;
+    height: 80px;
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border-color);
+}
+
+.theme-preview-light {
+    background: #ffffff;
+}
+
+.theme-preview-dark {
+    background: #0f172a;
+}
+
+.preview-header {
+    height: 20px;
+    margin-bottom: 8px;
+}
+
+.theme-preview-light .preview-header {
+    background: #f8fafc;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.theme-preview-dark .preview-header {
+    background: #1e293b;
+    border-bottom: 1px solid #334155;
+}
+
+.preview-content {
+    padding: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.preview-text {
+    height: 8px;
+    border-radius: 2px;
+}
+
+.preview-text.short {
+    width: 60%;
+}
+
+.theme-preview-light .preview-text {
+    background: #cbd5e1;
+}
+
+.theme-preview-dark .preview-text {
+    background: #475569;
+}
+
+.theme-label {
+    font-weight: 600;
+    color: var(--text-primary);
+    font-size: var(--font-size-base);
+}
+
+/* Quiz Settings Form */
+.quiz-settings-form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-lg);
+}
+
+.checkbox-label {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--spacing-md);
+    cursor: pointer;
+    margin: 0;
+}
+
+.form-checkbox {
+    width: 18px;
+    height: 18px;
+    margin: 0;
+    cursor: pointer;
+    accent-color: var(--primary-color);
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.checkbox-text {
+    font-weight: 500;
+    color: var(--text-primary);
+    font-size: var(--font-size-base);
+}
+
+/* Data Management */
+.data-management {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-lg);
+}
+
+.data-actions {
+    display: flex;
+    gap: var(--spacing-sm);
+    flex-wrap: wrap;
+}
+
+/* Settings Footer */
+.settings-footer {
+    display: flex;
+    justify-content: center;
+    gap: var(--spacing-md);
+    padding-top: var(--spacing-xl);
+    border-top: 1px solid var(--border-color);
+    margin-top: var(--spacing-xl);
+    flex-wrap: wrap;
+}
+
+.settings-footer .btn {
+    min-width: 140px;
+    padding: var(--spacing-md) var(--spacing-lg);
+    font-weight: 600;
+}
+
+/* Loading State */
+.settings-container .loading-spinner-container {
+    min-height: 400px;
+}
+
+/* Alert Positioning */
+.settings-container .alert {
+    margin-bottom: var(--spacing-lg);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .settings-container {
+        padding: var(--spacing-md);
+    }
+    
+    .settings-section {
+        padding: var(--spacing-lg);
+    }
+    
+    .theme-options {
+        grid-template-columns: 1fr;
+    }
+    
+    .theme-option {
+        padding: var(--spacing-md);
+    }
+    
+    .theme-preview {
+        width: 100px;
+        height: 60px;
+    }
+    
+    .api-key-actions,
+    .data-actions {
+        flex-direction: column;
+    }
+    
+    .api-key-actions .btn,
+    .data-actions .btn {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .settings-footer {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .settings-footer .btn {
+        width: 100%;
+        max-width: 300px;
+    }
+}
+
+@media (max-width: 480px) {
+    .settings-container {
+        padding: var(--spacing-sm);
+    }
+    
+    .settings-section {
+        padding: var(--spacing-md);
+    }
+    
+    .settings-header h1 {
+        font-size: var(--font-size-2xl);
+    }
+    
+    .section-header h2 {
+        font-size: var(--font-size-lg);
+    }
+    
+    .checkbox-label {
+        gap: var(--spacing-sm);
+    }
+    
+    .theme-preview {
+        width: 80px;
+        height: 50px;
+    }
+    
+    .preview-content {
+        padding: 4px;
+        gap: 2px;
+    }
+    
+    .preview-text {
+        height: 6px;
+    }
+}
+
+/* Dark Theme Adjustments */
+body.theme-dark .theme-option.selected {
+    background: rgba(37, 99, 235, 0.2);
+}
+
+body.theme-dark .theme-preview {
+    border-color: var(--border-color-dark);
+}
+
+/* Focus Styles for Accessibility */
+.theme-option:focus {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
+}
+
+.form-checkbox:focus {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
+}
+
+/* Animation for theme switching */
+.theme-option {
+    transition: all 0.2s ease;
+}
+
+.theme-option:hover:not(.selected) {
+    transform: translateY(-1px);
+}
+
+.theme-option.selected {
+    transform: translateY(-2px);
+}
+
+/* Enhanced button styles for settings */
+.settings-section .btn {
+    transition: all 0.2s ease;
+}
+
+.settings-section .btn:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+}
+
+.settings-section .btn:active {
+    transform: translateY(0);
+}
+
+/* Status indicators */
+.api-key-status {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    font-size: var(--font-size-sm);
+    margin-top: var(--spacing-xs);
+}
+
+.status-indicator {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+}
+
+.status-valid {
+    background: var(--success-color);
+}
+
+.status-invalid {
+    background: var(--error-color);
+}
+
+.status-unknown {
+    background: var(--text-muted);
+}
+
+/* Reduced motion preferences */
+@media (prefers-reduced-motion: reduce) {
+    .theme-option,
+    .settings-section .btn {
+        transition: none;
+        transform: none !important;
+    }
+    
+    .theme-option:hover,
+    .theme-option.selected {
+        transform: none;
+    }
+}

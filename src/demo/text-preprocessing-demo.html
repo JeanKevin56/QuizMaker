@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Text Preprocessing Demo</title>
+    <link rel="stylesheet" href="../styles/main.css">
+    <link rel="stylesheet" href="../styles/text-preview.css">
+    <style>
+        .demo-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .demo-section {
+            background: white;
+            border-radius: 8px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .demo-section h2 {
+            margin-top: 0;
+            color: #1f2937;
+            border-bottom: 2px solid #e5e7eb;
+            padding-bottom: 8px;
+        }
+        
+        .input-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .input-group {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .input-group label {
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #374151;
+        }
+        
+        .text-input {
+            width: 100%;
+            min-height: 200px;
+            padding: 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 14px;
+            resize: vertical;
+        }
+        
+        .file-input {
+            padding: 8px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            background: white;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .btn-primary {
+            background-color: #3b82f6;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: #2563eb;
+        }
+        
+        .btn-secondary {
+            background-color: #6b7280;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background-color: #4b5563;
+        }
+        
+        .status-message {
+            padding: 12px;
+            border-radius: 6px;
+            margin: 12px 0;
+            display: none;
+        }
+        
+        .status-success {
+            background-color: #d1fae5;
+            color: #065f46;
+            border: 1px solid #a7f3d0;
+        }
+        
+        .status-error {
+            background-color: #fef2f2;
+            color: #dc2626;
+            border: 1px solid #fecaca;
+        }
+        
+        .status-info {
+            background-color: #dbeafe;
+            color: #1e40af;
+            border: 1px solid #93c5fd;
+        }
+        
+        .results-section {
+            display: none;
+        }
+        
+        .sample-texts {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 8px;
+        }
+        
+        .sample-btn {
+            padding: 4px 8px;
+            background-color: #f3f4f6;
+            border: 1px solid #d1d5db;
+            border-radius: 4px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .sample-btn:hover {
+            background-color: #e5e7eb;
+        }
+        
+        @media (max-width: 768px) {
+            .input-section {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="demo-container">
+        <h1>Text Preprocessing Demo</h1>
+        <p>This demo showcases the text preprocessing functionality for AI quiz generation. Upload a PDF or paste text to see how it's cleaned, validated, and chunked for processing.</p>
+        
+        <div class="demo-section">
+            <h2>Input Text</h2>
+            
+            <div class="input-section">
+                <div class="input-group">
+                    <label for="text-input">Paste Text Content:</label>
+                    <textarea id="text-input" class="text-input" placeholder="Paste your text content here..."></textarea>
+                    <div class="sample-texts">
+                        <button class="sample-btn" data-sample="clean">Clean Text</button>
+                        <button class="sample-btn" data-sample="messy">Messy PDF Text</button>
+                        <button class="sample-btn" data-sample="short">Too Short</button>
+                        <button class="sample-btn" data-sample="long">Long Document</button>
+                    </div>
+                </div>
+                
+                <div class="input-group">
+                    <label for="pdf-input">Or Upload PDF:</label>
+                    <input type="file" id="pdf-input" class="file-input" accept=".pdf">
+                    <div class="status-message" id="pdf-status"></div>
+                </div>
+            </div>
+            
+            <div class="controls">
+                <button id="process-btn" class="btn btn-primary">Process Text</button>
+                <button id="clear-btn" class="btn btn-secondary">Clear</button>
+                <label>
+                    <input type="checkbox" id="preserve-paragraphs" checked>
+                    Preserve Paragraphs
+                </label>
+                <label>
+                    Max Chunk Size:
+                    <input type="number" id="chunk-size" value="4000" min="100" max="10000" style="width: 80px; margin-left: 4px;">
+                </label>
+            </div>
+            
+            <div class="status-message" id="processing-status"></div>
+        </div>
+        
+        <div class="demo-section results-section" id="results-section">
+            <h2>Processing Results</h2>
+            <div id="results-content"></div>
+        </div>
+    </div>
+    
+    <!-- Text Preview Modal Container -->
+    <div id="text-preview-container"></div>
+    
+    <script type="module">
+        import { TextPreprocessor } from '../services/TextPreprocessor.js';
+        import { TextPreview } from '../components/TextPreview.js';
+        import { PDFProcessor } from '../services/PDFProcessor.js';
+        
+        // Initialize services
+        const textPreprocessor = new TextPreprocessor();
+        const pdfProcessor = new PDFProcessor();
+        const textPreview = new TextPreview(document.getElementById('text-preview-container'));
+        
+        // Sample texts for demonstration
+        const sampleTexts = {
+            clean: `Machine Learning Fundamentals
+
+Machine learning is a subset of artificial intelligence that focuses on the development of algorithms and statistical models that enable computer systems to improve their performance on a specific task through experience.
+
+Key Concepts:
+1. Supervised Learning - Learning with labeled training data
+2. Unsupervised Learning - Finding patterns in unlabeled data  
+3. Reinforcement Learning - Learning through interaction with environment
+
+Applications include image recognition, natural language processing, recommendation systems, and autonomous vehicles.`,
+            
+            messy: `Chapter    1
+            
+            
+            Machine    Learning    Fundamentals
+            
+            Page 1 of 25
+            
+            Machine learning is a    subset of artificial intelligence that focuses on the development of algorithms and statistical models that enable computer systems to improve their performance on a specific task through experience.
+            
+            a
+            
+            Key Concepts:
+            1. Supervised Learning - Learning with labeled training data
+            2. Unsupervised Learning - Finding patterns in unlabeled data  
+            3. Reinforcement Learning - Learning through interaction with environment
+            
+            123
+            
+            Applications include image recognition, natural language processing, recommendation systems, and autonomous vehicles.
+            
+            Page 2 of 25`,
+            
+            short: `Too short text.`,
+            
+            long: `Machine Learning Fundamentals
+
+Machine learning is a subset of artificial intelligence (AI) that focuses on the development of algorithms and statistical models that enable computer systems to improve their performance on a specific task through experience, without being explicitly programmed for every scenario.
+
+Historical Context:
+The concept of machine learning has its roots in the 1940s and 1950s, with early pioneers like Alan Turing proposing the idea of machines that could learn. The term "machine learning" was coined by Arthur Samuel in 1959, who defined it as a "field of study that gives computers the ability to learn without being explicitly programmed."
+
+Types of Machine Learning:
+
+1. Supervised Learning
+Supervised learning involves training algorithms on labeled datasets, where both input and desired output are provided. The algorithm learns to map inputs to outputs based on the training examples. Common supervised learning tasks include:
+- Classification: Predicting discrete categories or classes
+- Regression: Predicting continuous numerical values
+
+Popular supervised learning algorithms include linear regression, logistic regression, decision trees, random forests, support vector machines, and neural networks.
+
+2. Unsupervised Learning  
+Unsupervised learning works with unlabeled data, seeking to discover hidden patterns or structures without explicit guidance about the desired output. Key unsupervised learning tasks include:
+- Clustering: Grouping similar data points together
+- Dimensionality Reduction: Reducing the number of features while preserving important information
+- Association Rule Learning: Finding relationships between different variables
+
+Common unsupervised learning algorithms include k-means clustering, hierarchical clustering, principal component analysis (PCA), and association rule mining algorithms like Apriori.
+
+3. Reinforcement Learning
+Reinforcement learning involves an agent learning to make decisions by interacting with an environment. The agent receives rewards or penalties based on its actions and learns to maximize cumulative reward over time. This approach is particularly useful for sequential decision-making problems.
+
+Key concepts in reinforcement learning include:
+- Agent: The learner or decision maker
+- Environment: The world in which the agent operates
+- State: The current situation of the agent
+- Action: What the agent can do in each state
+- Reward: Feedback from the environment
+- Policy: The agent's strategy for choosing actions
+
+Applications of Machine Learning:
+
+Computer Vision:
+Machine learning has revolutionized computer vision, enabling systems to interpret and understand visual information. Applications include:
+- Image classification and object detection
+- Facial recognition systems
+- Medical image analysis
+- Autonomous vehicle perception systems
+
+Natural Language Processing:
+ML techniques have transformed how computers process and understand human language:
+- Machine translation systems
+- Sentiment analysis
+- Chatbots and virtual assistants
+- Text summarization and generation
+
+Recommendation Systems:
+Many online platforms use ML to provide personalized recommendations:
+- E-commerce product recommendations
+- Movie and music streaming suggestions
+- Social media content curation
+- News article recommendations
+
+Healthcare:
+Machine learning is making significant impacts in healthcare:
+- Drug discovery and development
+- Medical diagnosis assistance
+- Personalized treatment plans
+- Epidemic prediction and tracking
+
+Finance:
+The financial industry leverages ML for:
+- Fraud detection and prevention
+- Algorithmic trading
+- Credit scoring and risk assessment
+- Insurance claim processing
+
+Challenges and Considerations:
+
+Data Quality and Quantity:
+Machine learning algorithms require high-quality, representative data to perform well. Issues include:
+- Data bias and fairness concerns
+- Missing or incomplete data
+- Data privacy and security
+- Need for large datasets
+
+Model Interpretability:
+As models become more complex, understanding their decision-making process becomes challenging:
+- Black box problem with deep learning models
+- Need for explainable AI in critical applications
+- Balancing accuracy with interpretability
+
+Overfitting and Generalization:
+Models may perform well on training data but poorly on new, unseen data:
+- Importance of proper validation techniques
+- Regularization methods to prevent overfitting
+- Cross-validation and holdout testing
+
+Computational Resources:
+Training complex models requires significant computational power:
+- GPU and TPU acceleration
+- Cloud computing platforms
+- Distributed training systems
+
+Future Directions:
+
+The field of machine learning continues to evolve rapidly with several emerging trends:
+
+Deep Learning Advances:
+- Transformer architectures for natural language processing
+- Generative adversarial networks (GANs)
+- Self-supervised learning approaches
+
+AutoML and Democratization:
+- Automated machine learning tools
+- Low-code/no-code ML platforms
+- Making ML accessible to non-experts
+
+Edge Computing:
+- Running ML models on mobile devices
+- Internet of Things (IoT) applications
+- Real-time inference capabilities
+
+Ethical AI and Responsible ML:
+- Fairness and bias mitigation
+- Privacy-preserving machine learning
+- Transparent and accountable AI systems
+
+Conclusion:
+Machine learning represents a fundamental shift in how we approach problem-solving with computers. By enabling systems to learn from data and improve their performance over time, ML has opened up new possibilities across virtually every industry and domain. As the field continues to advance, we can expect even more innovative applications and solutions to emerge, while also addressing the important challenges around ethics, interpretability, and responsible deployment of these powerful technologies.`
+        };
+        
+        // DOM elements
+        const textInput = document.getElementById('text-input');
+        const pdfInput = document.getElementById('pdf-input');
+        const processBtn = document.getElementById('process-btn');
+        const clearBtn = document.getElementById('clear-btn');
+        const preserveParagraphs = document.getElementById('preserve-paragraphs');
+        const chunkSize = document.getElementById('chunk-size');
+        const processingStatus = document.getElementById('processing-status');
+        const pdfStatus = document.getElementById('pdf-status');
+        const resultsSection = document.getElementById('results-section');
+        const resultsContent = document.getElementById('results-content');
+        
+        // Sample text buttons
+        document.querySelectorAll('.sample-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const sampleType = btn.dataset.sample;
+                textInput.value = sampleTexts[sampleType];
+                showStatus('Sample text loaded', 'info');
+            });
+        });
+        
+        // PDF upload handler
+        pdfInput.addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            
+            showPdfStatus('Processing PDF...', 'info');
+            
+            try {
+                const validation = pdfProcessor.validateFile(file);
+                if (!validation.success) {
+                    showPdfStatus(validation.message, 'error');
+                    return;
+                }
+                
+                const extractedText = await pdfProcessor.extractText(file);
+                if (extractedText.success) {
+                    textInput.value = extractedText.text;
+                    showPdfStatus(`PDF processed successfully. Extracted ${extractedText.text.length} characters.`, 'success');
+                } else {
+                    showPdfStatus(extractedText.error, 'error');
+                }
+            } catch (error) {
+                showPdfStatus(`PDF processing failed: ${error.message}`, 'error');
+            }
+        });
+        
+        // Process text button
+        processBtn.addEventListener('click', () => {
+            const text = textInput.value.trim();
+            if (!text) {
+                showStatus('Please enter some text or upload a PDF', 'error');
+                return;
+            }
+            
+            showStatus('Processing text...', 'info');
+            
+            const options = {
+                maxSize: parseInt(chunkSize.value),
+                preserveParagraphs: preserveParagraphs.checked
+            };
+            
+            const result = textPreprocessor.processText(text, options);
+            displayResults(result);
+        });
+        
+        // Clear button
+        clearBtn.addEventListener('click', () => {
+            textInput.value = '';
+            pdfInput.value = '';
+            hideStatus();
+            hidePdfStatus();
+            hideResults();
+        });
+        
+        // Text preview callbacks
+        textPreview.setCallbacks({
+            onApprove: (processedData) => {
+                showStatus('Text approved for AI processing!', 'success');
+                console.log('Approved processed data:', processedData);
+            },
+            onReject: () => {
+                showStatus('Text processing cancelled', 'info');
+            },
+            onEdit: (processedText) => {
+                textInput.value = processedText;
+                showStatus('Text loaded for editing', 'info');
+            }
+        });
+        
+        function displayResults(result) {
+            if (!result.success) {
+                showStatus(`Processing failed: ${result.error}`, 'error');
+                hideResults();
+                return;
+            }
+            
+            showStatus('Text processed successfully!', 'success');
+            
+            const { processedText, metadata, chunks, validation } = result;
+            
+            resultsContent.innerHTML = `
+                <div class="results-grid">
+                    <div class="result-section">
+                        <h3>Validation Results</h3>
+                        <div class="validation-info">
+                            <p><strong>Status:</strong> <span class="status-success">✓ Valid</span></p>
+                            <p><strong>Word Count:</strong> ${validation.wordCount.toLocaleString()}</p>
+                            <p><strong>Character Count:</strong> ${validation.length.toLocaleString()}</p>
+                            <p><strong>Estimated Chunks:</strong> ${validation.estimatedChunks}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="result-section">
+                        <h3>Text Metadata</h3>
+                        <div class="metadata-info">
+                            <p><strong>Paragraphs:</strong> ${metadata.paragraphCount}</p>
+                            <p><strong>Reading Time:</strong> ${metadata.estimatedReadingTime} minutes</p>
+                            <p><strong>Complexity:</strong> <span class="complexity-${metadata.complexity}">${metadata.complexity}</span></p>
+                            <p><strong>Language:</strong> ${metadata.language}</p>
+                            <p><strong>Avg Words/Paragraph:</strong> ${metadata.averageWordsPerParagraph}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="result-section">
+                        <h3>Key Topics</h3>
+                        <div class="topics-display">
+                            ${metadata.keyTopics.slice(0, 8).map(topic => 
+                                `<span class="topic-tag">${topic.word} (${topic.frequency})</span>`
+                            ).join('')}
+                        </div>
+                    </div>
+                    
+                    <div class="result-section">
+                        <h3>Text Chunks</h3>
+                        <div class="chunks-info">
+                            <p><strong>Total Chunks:</strong> ${chunks.length}</p>
+                            <p><strong>Average Chunk Size:</strong> ${Math.round(chunks.reduce((sum, chunk) => sum + chunk.content.length, 0) / chunks.length)} characters</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="result-actions">
+                    <button id="preview-btn" class="btn btn-primary">Preview Processed Text</button>
+                    <button id="download-btn" class="btn btn-secondary">Download Results</button>
+                </div>
+            `;
+            
+            // Add event listeners for result actions
+            document.getElementById('preview-btn').addEventListener('click', () => {
+                textPreview.showPreview(result);
+            });
+            
+            document.getElementById('download-btn').addEventListener('click', () => {
+                downloadResults(result);
+            });
+            
+            resultsSection.style.display = 'block';
+        }
+        
+        function downloadResults(result) {
+            const data = {
+                processedText: result.processedText,
+                metadata: result.metadata,
+                chunks: result.chunks.map(chunk => ({
+                    index: chunk.index,
+                    wordCount: chunk.wordCount,
+                    content: chunk.content.substring(0, 200) + '...' // Truncate for download
+                })),
+                validation: result.validation,
+                timestamp: new Date().toISOString()
+            };
+            
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'text-processing-results.json';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+        
+        function showStatus(message, type) {
+            processingStatus.textContent = message;
+            processingStatus.className = `status-message status-${type}`;
+            processingStatus.style.display = 'block';
+        }
+        
+        function hideStatus() {
+            processingStatus.style.display = 'none';
+        }
+        
+        function showPdfStatus(message, type) {
+            pdfStatus.textContent = message;
+            pdfStatus.className = `status-message status-${type}`;
+            pdfStatus.style.display = 'block';
+        }
+        
+        function hidePdfStatus() {
+            pdfStatus.style.display = 'none';
+        }
+        
+        function hideResults() {
+            resultsSection.style.display = 'none';
+        }
+    </script>
+    
+    <style>
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 24px;
+        }
+        
+        .result-section {
+            background-color: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            padding: 16px;
+        }
+        
+        .result-section h3 {
+            margin: 0 0 12px 0;
+            color: #1f2937;
+            font-size: 1rem;
+        }
+        
+        .validation-info p,
+        .metadata-info p,
+        .chunks-info p {
+            margin: 4px 0;
+            color: #4b5563;
+        }
+        
+        .status-success {
+            color: #059669;
+            font-weight: 600;
+        }
+        
+        .complexity-basic {
+            color: #059669;
+        }
+        
+        .complexity-intermediate {
+            color: #d97706;
+        }
+        
+        .complexity-advanced {
+            color: #dc2626;
+        }
+        
+        .topics-display {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+        
+        .topic-tag {
+            background-color: #dbeafe;
+            color: #1e40af;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+        
+        .result-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            padding-top: 20px;
+            border-top: 1px solid #e5e7eb;
+        }
+    </style>
+</body>
+</html>

@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Question Editor Demo - Quiz Platform</title>
+    <link rel="stylesheet" href="../styles/main.css">
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            background: var(--bg-secondary);
+        }
+        
+        .demo-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: var(--bg-primary);
+            border-radius: 8px;
+            box-shadow: var(--shadow-lg);
+            overflow: hidden;
+        }
+        
+        .demo-header {
+            background: var(--primary-color);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .demo-content {
+            padding: 0;
+        }
+        
+        .demo-controls {
+            padding: 20px;
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        
+        .demo-controls button {
+            padding: 8px 16px;
+            border: 1px solid var(--border-color);
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+        
+        .demo-controls button:hover {
+            background: var(--bg-tertiary);
+        }
+        
+        .demo-controls button.active {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+        
+        .demo-output {
+            padding: 20px;
+            background: var(--bg-secondary);
+            border-top: 1px solid var(--border-color);
+            margin-top: 20px;
+        }
+        
+        .demo-output h4 {
+            margin: 0 0 12px 0;
+            color: var(--text-primary);
+        }
+        
+        .demo-output pre {
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            padding: 16px;
+            overflow-x: auto;
+            font-size: 0.9rem;
+            color: var(--text-primary);
+        }
+    </style>
+</head>
+<body>
+    <div class="demo-container">
+        <div class="demo-header">
+            <h1>Question Editor Demo</h1>
+            <p>Interactive demonstration of the question editor interface</p>
+        </div>
+        
+        <div class="demo-controls">
+            <button id="new-mcq-single-btn" class="active">New MCQ Single</button>
+            <button id="new-mcq-multiple-btn">New MCQ Multiple</button>
+            <button id="new-text-input-btn">New Text Input</button>
+            <button id="edit-sample-btn">Edit Sample Question</button>
+            <button id="toggle-theme-btn">Toggle Theme</button>
+            <button id="reset-demo-btn">Reset Demo</button>
+        </div>
+        
+        <div class="demo-content">
+            <div id="question-editor-container">
+                <!-- Question editor will be rendered here -->
+            </div>
+        </div>
+        
+        <div class="demo-output">
+            <h4>Question Data Output:</h4>
+            <pre id="question-output">No question data yet...</pre>
+        </div>
+    </div>
+
+    <script type="module">
+        import { QuestionEditor } from '../components/QuestionEditor.js';
+        import { QUESTION_TYPES } from '../models/types.js';
+
+        let currentQuestionEditor = null;
+        const container = document.getElementById('question-editor-container');
+        const output = document.getElementById('question-output');
+
+        // Sample questions for editing demo
+        const sampleQuestions = {
+            mcqSingle: {
+                id: 'sample-mcq-single-123',
+                type: QUESTION_TYPES.MCQ_SINGLE,
+                question: 'What is the capital of France?',
+                options: ['London', 'Berlin', 'Paris', 'Madrid'],
+                correctAnswer: 2,
+                explanation: 'Paris is the capital and largest city of France.',
+                media: null
+            },
+            mcqMultiple: {
+                id: 'sample-mcq-multiple-456',
+                type: QUESTION_TYPES.MCQ_MULTIPLE,
+                question: 'Which of the following are programming languages?',
+                options: ['JavaScript', 'HTML', 'Python', 'CSS', 'Java'],
+                correctAnswers: [0, 2, 4],
+                explanation: 'JavaScript, Python, and Java are programming languages. HTML and CSS are markup and styling languages respectively.',
+                media: null
+            },
+            textInput: {
+                id: 'sample-text-input-789',
+                type: QUESTION_TYPES.TEXT_INPUT,
+                question: 'What is the result of 15 + 27?',
+                correctAnswer: '42',
+                caseSensitive: false,
+                explanation: '15 + 27 = 42. This is basic arithmetic addition.',
+                media: null
+            }
+        };
+
+        // Mock StorageManager for demo
+        class MockStorageManager {
+            constructor() {
+                this.mediaStore = new Map();
+            }
+
+            async storeMedia(mediaId, data, mimeType) {
+                this.mediaStore.set(mediaId, { data, mimeType, createdAt: new Date() });
+                console.log('Media stored:', mediaId);
+                return mediaId;
+            }
+
+            async getMedia(mediaId) {
+                return this.mediaStore.get(mediaId) || null;
+            }
+
+            async deleteMedia(mediaId) {
+                return this.mediaStore.delete(mediaId);
+            }
+        }
+
+        const mockStorageManager = new MockStorageManager();
+
+        // Initialize new question editor
+        function initNewQuestion(type = QUESTION_TYPES.MCQ_SINGLE) {
+            if (currentQuestionEditor) {
+                container.innerHTML = '';
+            }
+            
+            currentQuestionEditor = new QuestionEditor(mockStorageManager);
+            
+            // Set the default type
+            const defaultQuestion = currentQuestionEditor.getDefaultQuestion();
+            defaultQuestion.type = type;
+            currentQuestionEditor.currentQuestion = defaultQuestion;
+            
+            currentQuestionEditor.init(
+                container,
+                null,
+                handleQuestionSave,
+                handleQuestionCancel
+            );
+            
+            updateOutput(defaultQuestion);
+        }
+
+        // Initialize edit question editor
+        function initEditQuestion(questionType) {
+            if (currentQuestionEditor) {
+                container.innerHTML = '';
+            }
+            
+            currentQuestionEditor = new QuestionEditor(mockStorageManager);
+            const sampleQuestion = sampleQuestions[questionType];
+            
+            currentQuestionEditor.init(
+                container,
+                sampleQuestion,
+                handleQuestionSave,
+                handleQuestionCancel
+            );
+            
+            updateOutput(sampleQuestion);
+        }
+
+        // Handle question save
+        function handleQuestionSave(question) {
+            console.log('Question saved:', question);
+            updateOutput(question);
+            
+            // Show success message
+            alert('Question saved successfully!\n\nCheck the output below to see the question data.');
+        }
+
+        // Handle question cancel
+        function handleQuestionCancel() {
+            console.log('Question editing cancelled');
+            alert('Question editing cancelled.');
+        }
+
+        // Update output display
+        function updateOutput(question) {
+            if (question) {
+                output.textContent = JSON.stringify(question, null, 2);
+            } else {
+                output.textContent = 'No question data yet...';
+            }
+        }
+
+        // Toggle theme
+        function toggleTheme() {
+            document.body.classList.toggle('theme-dark');
+        }
+
+        // Reset demo
+        function resetDemo() {
+            initNewQuestion(QUESTION_TYPES.MCQ_SINGLE);
+            updateButtonStates('new-mcq-single-btn');
+        }
+
+        // Update button states
+        function updateButtonStates(activeButtonId) {
+            const buttons = document.querySelectorAll('.demo-controls button');
+            buttons.forEach(button => {
+                button.classList.remove('active');
+            });
+            
+            const activeButton = document.getElementById(activeButtonId);
+            if (activeButton) {
+                activeButton.classList.add('active');
+            }
+        }
+
+        // Event listeners
+        document.getElementById('new-mcq-single-btn').addEventListener('click', () => {
+            initNewQuestion(QUESTION_TYPES.MCQ_SINGLE);
+            updateButtonStates('new-mcq-single-btn');
+        });
+
+        document.getElementById('new-mcq-multiple-btn').addEventListener('click', () => {
+            initNewQuestion(QUESTION_TYPES.MCQ_MULTIPLE);
+            updateButtonStates('new-mcq-multiple-btn');
+        });
+
+        document.getElementById('new-text-input-btn').addEventListener('click', () => {
+            initNewQuestion(QUESTION_TYPES.TEXT_INPUT);
+            updateButtonStates('new-text-input-btn');
+        });
+
+        document.getElementById('edit-sample-btn').addEventListener('click', () => {
+            // Cycle through sample questions
+            const types = ['mcqSingle', 'mcqMultiple', 'textInput'];
+            const randomType = types[Math.floor(Math.random() * types.length)];
+            initEditQuestion(randomType);
+            updateButtonStates('edit-sample-btn');
+        });
+
+        document.getElementById('toggle-theme-btn').addEventListener('click', toggleTheme);
+        document.getElementById('reset-demo-btn').addEventListener('click', resetDemo);
+
+        // Monitor form changes to update output in real-time
+        setInterval(() => {
+            if (currentQuestionEditor) {
+                try {
+                    const currentQuestion = currentQuestionEditor.getQuestion();
+                    updateOutput(currentQuestion);
+                } catch (error) {
+                    // Ignore errors during real-time updates
+                }
+            }
+        }, 1000);
+
+        // Initialize with MCQ single by default
+        initNewQuestion(QUESTION_TYPES.MCQ_SINGLE);
+    </script>
+</body>
+</html>

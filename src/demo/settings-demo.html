@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings Component Demo</title>
+    <link rel="stylesheet" href="../styles/main.css">
+    <style>
+        body {
+            padding: 2rem;
+            background: var(--bg-secondary);
+        }
+        
+        .demo-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: var(--bg-primary);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-lg);
+            overflow: hidden;
+        }
+        
+        .demo-header {
+            background: var(--primary-color);
+            color: white;
+            padding: var(--spacing-lg);
+            text-align: center;
+        }
+        
+        .demo-content {
+            padding: var(--spacing-lg);
+        }
+        
+        .demo-controls {
+            background: var(--bg-secondary);
+            padding: var(--spacing-md);
+            border-radius: var(--radius-md);
+            margin-bottom: var(--spacing-lg);
+            display: flex;
+            gap: var(--spacing-md);
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        
+        .demo-info {
+            background: var(--info-background);
+            color: var(--info-text);
+            padding: var(--spacing-md);
+            border-radius: var(--radius-md);
+            margin-bottom: var(--spacing-lg);
+            border: 1px solid rgba(59, 130, 246, 0.2);
+        }
+        
+        .demo-info h3 {
+            margin-top: 0;
+            margin-bottom: var(--spacing-sm);
+        }
+        
+        .demo-info ul {
+            margin: 0;
+            padding-left: var(--spacing-lg);
+        }
+        
+        .demo-info li {
+            margin-bottom: var(--spacing-xs);
+        }
+    </style>
+</head>
+<body class="theme-light">
+    <div class="demo-container">
+        <div class="demo-header">
+            <h1>Settings Component Demo</h1>
+            <p>Interactive demonstration of the Settings component</p>
+        </div>
+        
+        <div class="demo-content">
+            <div class="demo-info">
+                <h3>Settings Component Features</h3>
+                <ul>
+                    <li><strong>API Key Management:</strong> Store and test Google Gemini API keys</li>
+                    <li><strong>Theme Switching:</strong> Toggle between light and dark themes</li>
+                    <li><strong>Default Quiz Settings:</strong> Configure default preferences for new quizzes</li>
+                    <li><strong>Data Management:</strong> Export, import, and clear user data</li>
+                    <li><strong>Persistent Storage:</strong> Settings are saved to localStorage</li>
+                    <li><strong>Validation:</strong> Input validation and error handling</li>
+                </ul>
+            </div>
+            
+            <div class="demo-controls">
+                <button id="reset-demo" class="btn btn-secondary">Reset Demo</button>
+                <button id="load-sample-data" class="btn btn-primary">Load Sample Data</button>
+                <button id="toggle-theme" class="btn btn-warning">Toggle Theme</button>
+                <span class="demo-status">Ready</span>
+            </div>
+            
+            <div id="settings-container">
+                <!-- Settings component will be rendered here -->
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { Settings } from '../components/Settings.js';
+        import { THEMES } from '../models/types.js';
+
+        let settings;
+        let currentTheme = THEMES.LIGHT;
+
+        async function initDemo() {
+            const container = document.getElementById('settings-container');
+            const statusElement = document.querySelector('.demo-status');
+            
+            try {
+                statusElement.textContent = 'Initializing...';
+                
+                settings = new Settings();
+                await settings.init(container);
+                
+                statusElement.textContent = 'Ready';
+                statusElement.style.color = 'var(--success-color)';
+                
+                console.log('Settings demo initialized successfully');
+            } catch (error) {
+                console.error('Failed to initialize settings demo:', error);
+                statusElement.textContent = 'Error: ' + error.message;
+                statusElement.style.color = 'var(--error-color)';
+            }
+        }
+
+        function resetDemo() {
+            const confirmed = confirm('Reset the demo? This will clear all settings and reload the component.');
+            if (confirmed) {
+                // Clear localStorage
+                localStorage.removeItem('quiz-platform-preferences');
+                localStorage.removeItem('quiz-platform-user-id');
+                
+                // Reinitialize
+                initDemo();
+            }
+        }
+
+        function loadSampleData() {
+            if (!settings) return;
+            
+            const samplePreferences = {
+                apiKeys: {
+                    gemini: 'demo-api-key-12345'
+                },
+                preferences: {
+                    theme: THEMES.DARK,
+                    defaultQuizSettings: {
+                        shuffleQuestions: true,
+                        showExplanations: true
+                    }
+                }
+            };
+            
+            settings.updatePreferences(samplePreferences);
+        }
+
+        function toggleTheme() {
+            currentTheme = currentTheme === THEMES.LIGHT ? THEMES.DARK : THEMES.LIGHT;
+            document.body.classList.remove('theme-light', 'theme-dark');
+            document.body.classList.add(`theme-${currentTheme}`);
+            
+            if (settings) {
+                settings.selectTheme(currentTheme);
+            }
+        }
+
+        // Event listeners
+        document.getElementById('reset-demo').addEventListener('click', resetDemo);
+        document.getElementById('load-sample-data').addEventListener('click', loadSampleData);
+        document.getElementById('toggle-theme').addEventListener('click', toggleTheme);
+
+        // Initialize demo
+        initDemo();
+
+        // Demo-specific enhancements
+        window.addEventListener('load', () => {
+            // Add some demo-specific styling
+            const style = document.createElement('style');
+            style.textContent = `
+                .settings-container .alert {
+                    animation: slideInDown 0.3s ease-out;
+                }
+                
+                @keyframes slideInDown {
+                    from {
+                        opacity: 0;
+                        transform: translateY(-20px);
+                    }
+                    to {
+                        opacity: 1;
+                        transform: translateY(0);
+                    }
+                }
+                
+                .demo-status {
+                    font-weight: 600;
+                    padding: var(--spacing-xs) var(--spacing-sm);
+                    border-radius: var(--radius-sm);
+                    background: var(--bg-primary);
+                    border: 1px solid var(--border-color);
+                }
+            `;
+            document.head.appendChild(style);
+        });
+
+        // Expose settings instance for debugging
+        window.demoSettings = settings;
+    </script>
+</body>
+</html>

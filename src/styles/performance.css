@@ -1,0 +1,309 @@
+/**
+ * Performance optimization styles
+ * Includes loading states, lazy loading indicators, and optimization classes
+ */
+
+/* Loading spinner for lazy-loaded components */
+.loading-spinner {
+    display: inline-block;
+    width: 40px;
+    height: 40px;
+    border: 3px solid #f3f3f3;
+    border-top: 3px solid #007bff;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 20px auto;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Skeleton loading for content */
+.skeleton {
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: loading 1.5s infinite;
+}
+
+@keyframes loading {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+.skeleton-text {
+    height: 1em;
+    margin-bottom: 0.5em;
+    border-radius: 4px;
+}
+
+.skeleton-text:last-child {
+    width: 60%;
+}
+
+.skeleton-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+}
+
+.skeleton-button {
+    height: 36px;
+    width: 100px;
+    border-radius: 4px;
+}
+
+/* Lazy loading image placeholder */
+.lazy-image {
+    background-color: #f5f5f5;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Cpath fill='%23ddd' d='M20 2C10.06 2 2 10.06 2 20s8.06 18 18 18 18-8.06 18-18S29.94 2 20 2zm0 32c-7.73 0-14-6.27-14-14S12.27 6 20 6s14 6.27 14 14-6.27 14-14 14z'/%3E%3Cpath fill='%23ddd' d='M15 14l5 5 5-5v8l-5-5-5 5z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 40px 40px;
+    transition: opacity 0.3s ease;
+}
+
+.lazy-image.loaded {
+    background-image: none;
+}
+
+/* Performance optimization classes */
+.will-change-transform {
+    will-change: transform;
+}
+
+.will-change-opacity {
+    will-change: opacity;
+}
+
+.gpu-accelerated {
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    perspective: 1000px;
+}
+
+/* Reduce motion for users who prefer it */
+@media (prefers-reduced-motion: reduce) {
+    .loading-spinner {
+        animation: none;
+        border-top-color: transparent;
+    }
+    
+    .skeleton {
+        animation: none;
+        background: #f0f0f0;
+    }
+    
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* Update notification styles */
+.update-notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: #007bff;
+    color: white;
+    padding: 16px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    z-index: 10000;
+    max-width: 300px;
+    animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+.update-message p {
+    margin: 0 0 12px 0;
+    font-size: 14px;
+}
+
+.update-message button {
+    margin-right: 8px;
+    padding: 6px 12px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+.update-message .btn-primary {
+    background: white;
+    color: #007bff;
+}
+
+.update-message .btn-secondary {
+    background: transparent;
+    color: white;
+    border: 1px solid white;
+}
+
+/* Offline indicator styles */
+.offline-banner {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    background: #dc3545;
+    color: white;
+    text-align: center;
+    padding: 8px;
+    font-size: 14px;
+    z-index: 9999;
+    transform: translateY(-100%);
+    transition: transform 0.3s ease;
+}
+
+.offline-banner.show {
+    transform: translateY(0);
+}
+
+/* Image optimization indicators */
+.image-optimization-info {
+    font-size: 12px;
+    color: #666;
+    margin-top: 4px;
+}
+
+.compression-badge {
+    display: inline-block;
+    background: #28a745;
+    color: white;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 10px;
+    margin-left: 8px;
+}
+
+/* Critical CSS for above-the-fold content */
+.critical-content {
+    /* Ensure critical content loads first */
+    contain: layout style paint;
+}
+
+/* Defer non-critical content */
+.non-critical {
+    /* Content that can be loaded later */
+    content-visibility: auto;
+    contain-intrinsic-size: 200px;
+}
+
+/* Optimize font loading */
+@font-face {
+    font-family: 'System';
+    src: local('system-ui'), local('-apple-system'), local('BlinkMacSystemFont'), 
+         local('Segoe UI'), local('Roboto'), local('Oxygen'), local('Ubuntu'), 
+         local('Cantarell'), local('Helvetica Neue'), local('sans-serif');
+    font-display: swap;
+}
+
+/* Optimize images */
+img {
+    max-width: 100%;
+    height: auto;
+    loading: lazy;
+}
+
+/* Critical images should load immediately */
+img.critical {
+    loading: eager;
+}
+
+/* Optimize video loading */
+video {
+    loading: lazy;
+    preload: metadata;
+}
+
+/* Performance monitoring styles */
+.performance-metrics {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 8px 12px;
+    border-radius: 4px;
+    font-family: monospace;
+    font-size: 12px;
+    z-index: 9998;
+    display: none;
+}
+
+.performance-metrics.show {
+    display: block;
+}
+
+/* Bundle size optimization */
+.tree-shake-safe {
+    /* Mark components as tree-shake safe */
+}
+
+/* Preload critical resources */
+.preload-critical {
+    /* Critical resources that should be preloaded */
+}
+
+/* Responsive images */
+.responsive-image {
+    width: 100%;
+    height: auto;
+    object-fit: cover;
+}
+
+/* Optimize animations */
+.optimized-animation {
+    animation-fill-mode: both;
+    animation-play-state: paused;
+}
+
+.optimized-animation.in-view {
+    animation-play-state: running;
+}
+
+/* Memory optimization */
+.memory-efficient {
+    /* Styles that help with memory usage */
+    contain: strict;
+}
+
+/* Network optimization indicators */
+.network-status {
+    position: fixed;
+    top: 50px;
+    right: 20px;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    z-index: 9997;
+}
+
+.network-status.online {
+    background: #28a745;
+    color: white;
+}
+
+.network-status.offline {
+    background: #dc3545;
+    color: white;
+}
+
+.network-status.slow {
+    background: #ffc107;
+    color: black;
+}

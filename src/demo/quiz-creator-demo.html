@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Creator Demo - Quiz Platform</title>
+    <link rel="stylesheet" href="../styles/main.css">
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            background: var(--bg-secondary);
+        }
+        
+        .demo-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: var(--bg-primary);
+            border-radius: 8px;
+            box-shadow: var(--shadow-lg);
+            overflow: hidden;
+        }
+        
+        .demo-header {
+            background: var(--primary-color);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .demo-content {
+            padding: 0;
+        }
+        
+        .demo-controls {
+            padding: 20px;
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        
+        .demo-controls button {
+            padding: 8px 16px;
+            border: 1px solid var(--border-color);
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+        
+        .demo-controls button:hover {
+            background: var(--bg-tertiary);
+        }
+        
+        .demo-controls button.active {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+    </style>
+</head>
+<body>
+    <div class="demo-container">
+        <div class="demo-header">
+            <h1>Quiz Creator Demo</h1>
+            <p>Interactive demonstration of the quiz metadata editor</p>
+        </div>
+        
+        <div class="demo-controls">
+            <button id="new-quiz-btn" class="active">New Quiz</button>
+            <button id="edit-quiz-btn">Edit Existing Quiz</button>
+            <button id="toggle-theme-btn">Toggle Theme</button>
+            <button id="reset-demo-btn">Reset Demo</button>
+        </div>
+        
+        <div class="demo-content">
+            <div id="quiz-creator-container">
+                <!-- Quiz creator will be rendered here -->
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { QuizCreator } from '../components/QuizCreator.js';
+        import { QUESTION_TYPES } from '../models/types.js';
+
+        // Mock StorageManager for demo
+        class MockStorageManager {
+            constructor() {
+                this.quizzes = new Map();
+                this.isInitialized = false;
+            }
+
+            async initialize() {
+                this.isInitialized = true;
+                console.log('Mock StorageManager initialized');
+            }
+
+            async storeQuiz(quiz) {
+                this.quizzes.set(quiz.id, { ...quiz });
+                console.log('Quiz stored:', quiz.title);
+                return quiz.id;
+            }
+
+            async getQuiz(quizId) {
+                return this.quizzes.get(quizId) || null;
+            }
+
+            async getAllQuizzes() {
+                return Array.from(this.quizzes.values());
+            }
+
+            async updateQuiz(quizId, updates) {
+                const existing = this.quizzes.get(quizId);
+                if (existing) {
+                    const updated = { ...existing, ...updates, updatedAt: new Date() };
+                    this.quizzes.set(quizId, updated);
+                    return updated;
+                }
+                throw new Error('Quiz not found');
+            }
+
+            async deleteQuiz(quizId) {
+                this.quizzes.delete(quizId);
+            }
+        }
+
+        // Replace the real StorageManager with mock
+        window.MockStorageManager = MockStorageManager;
+
+        let currentQuizCreator = null;
+        const container = document.getElementById('quiz-creator-container');
+
+        // Sample quiz data for editing demo
+        const sampleQuiz = {
+            id: 'sample-quiz-123',
+            title: 'Sample Mathematics Quiz',
+            description: 'A comprehensive quiz covering basic algebra and geometry concepts for high school students.',
+            questions: [
+                {
+                    id: 'q1',
+                    type: QUESTION_TYPES.MCQ_SINGLE,
+                    question: 'What is the value of x in the equation 2x + 5 = 13?',
+                    options: ['x = 3', 'x = 4', 'x = 5', 'x = 6'],
+                    correctAnswer: 1,
+                    explanation: 'To solve 2x + 5 = 13, subtract 5 from both sides to get 2x = 8, then divide by 2 to get x = 4.'
+                },
+                {
+                    id: 'q2',
+                    type: QUESTION_TYPES.MCQ_MULTIPLE,
+                    question: 'Which of the following are prime numbers?',
+                    options: ['2', '4', '7', '9', '11'],
+                    correctAnswers: [0, 2, 4],
+                    explanation: 'Prime numbers are natural numbers greater than 1 that have no positive divisors other than 1 and themselves. 2, 7, and 11 are prime numbers.'
+                },
+                {
+                    id: 'q3',
+                    type: QUESTION_TYPES.TEXT_INPUT,
+                    question: 'What is the area of a circle with radius 5 units? (Use π ≈ 3.14)',
+                    correctAnswer: '78.5',
+                    caseSensitive: false,
+                    explanation: 'The area of a circle is πr². With r = 5, the area is π × 5² = π × 25 ≈ 3.14 × 25 = 78.5 square units.'
+                }
+            ],
+            createdAt: new Date('2024-01-15'),
+            updatedAt: new Date('2024-01-20'),
+            settings: {
+                shuffleQuestions: true,
+                showExplanations: true,
+                timeLimit: 45
+            }
+        };
+
+        // Initialize new quiz creator
+        async function initNewQuiz() {
+            if (currentQuizCreator) {
+                container.innerHTML = '';
+            }
+            
+            currentQuizCreator = new QuizCreator();
+            // Replace the storage manager with our mock
+            currentQuizCreator.storageManager = new MockStorageManager();
+            
+            await currentQuizCreator.init(container);
+            
+            // Update button states
+            document.getElementById('new-quiz-btn').classList.add('active');
+            document.getElementById('edit-quiz-btn').classList.remove('active');
+        }
+
+        // Initialize edit quiz creator
+        async function initEditQuiz() {
+            if (currentQuizCreator) {
+                container.innerHTML = '';
+            }
+            
+            currentQuizCreator = new QuizCreator();
+            // Replace the storage manager with our mock
+            currentQuizCreator.storageManager = new MockStorageManager();
+            
+            await currentQuizCreator.init(container, sampleQuiz);
+            
+            // Update button states
+            document.getElementById('new-quiz-btn').classList.remove('active');
+            document.getElementById('edit-quiz-btn').classList.add('active');
+        }
+
+        // Toggle theme
+        function toggleTheme() {
+            document.body.classList.toggle('theme-dark');
+        }
+
+        // Reset demo
+        function resetDemo() {
+            initNewQuiz();
+        }
+
+        // Event listeners
+        document.getElementById('new-quiz-btn').addEventListener('click', initNewQuiz);
+        document.getElementById('edit-quiz-btn').addEventListener('click', initEditQuiz);
+        document.getElementById('toggle-theme-btn').addEventListener('click', toggleTheme);
+        document.getElementById('reset-demo-btn').addEventListener('click', resetDemo);
+
+        // Handle navigation events from quiz creator
+        window.addEventListener('navigate', (event) => {
+            console.log('Navigation requested:', event.detail);
+            alert(`Navigation to ${event.detail.view} requested. In a real app, this would navigate to the dashboard.`);
+        });
+
+        // Initialize with new quiz by default
+        initNewQuiz();
+    </script>
+</body>
+</html>

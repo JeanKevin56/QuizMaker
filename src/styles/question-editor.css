@@ -1,0 +1,569 @@
+/**
+ * Question Editor Styles
+ * Styles for the question creation and editing interface
+ */
+
+.question-editor {
+    background: var(--card-background);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.question-editor-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 24px;
+    background: var(--card-header-background);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.question-editor-header h3 {
+    margin: 0;
+    color: var(--text-primary);
+    font-size: 1.3rem;
+    font-weight: 600;
+}
+
+.question-editor-actions {
+    display: flex;
+    gap: 12px;
+}
+
+.question-editor-content {
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+}
+
+/* Question Type Selection */
+.question-type-section h4,
+.question-text-section h4,
+.question-options-section h4,
+.text-input-section h4,
+.question-explanation-section h4,
+.question-media-section h4 {
+    margin: 0 0 16px 0;
+    color: var(--text-primary);
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.question-type-selector {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 16px;
+}
+
+.type-option {
+    cursor: pointer;
+    margin: 0;
+}
+
+.type-option input[type="radio"] {
+    display: none;
+}
+
+.type-card {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 20px;
+    border: 2px solid var(--border-color);
+    border-radius: 8px;
+    background: var(--background-color);
+    transition: all 0.2s ease;
+}
+
+.type-card:hover {
+    border-color: var(--primary-color-light);
+    background: var(--card-background);
+}
+
+.type-option input[type="radio"]:checked + .type-card {
+    border-color: var(--primary-color);
+    background: var(--primary-color-alpha);
+}
+
+.type-icon {
+    font-size: 2rem;
+    line-height: 1;
+}
+
+.type-info {
+    flex: 1;
+}
+
+.type-title {
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+}
+
+.type-description {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+}
+
+/* Question Text Section */
+.question-text-input {
+    min-height: 100px;
+    resize: vertical;
+}
+
+/* Options Section */
+.options-container {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+.option-item {
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background: var(--background-color);
+    overflow: hidden;
+}
+
+.option-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    background: var(--card-header-background);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.option-label {
+    font-weight: 500;
+    color: var(--text-primary);
+    font-size: 0.9rem;
+}
+
+.option-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.option-content {
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.option-input-group {
+    flex: 1;
+}
+
+.option-text {
+    width: 100%;
+}
+
+.option-correct-group {
+    display: flex;
+    align-items: center;
+}
+
+.option-correct-group .form-checkbox-label {
+    margin: 0;
+    font-size: 0.9rem;
+}
+
+/* Text Input Section */
+.text-input-section {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* Media Upload Placeholder */
+.media-upload-placeholder {
+    padding: 40px 20px;
+    border: 2px dashed var(--border-color);
+    border-radius: 8px;
+    text-align: center;
+    color: var(--text-secondary);
+    background: var(--bg-secondary);
+}
+
+.media-upload-placeholder p {
+    margin: 0;
+    font-style: italic;
+}
+
+/* Form Enhancements */
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.form-label {
+    font-weight: 500;
+    color: var(--text-primary);
+    font-size: 0.95rem;
+}
+
+.form-input,
+.form-textarea {
+    padding: 12px 16px;
+    border: 2px solid var(--border-color);
+    border-radius: 6px;
+    font-size: 1rem;
+    font-family: inherit;
+    background: var(--input-background);
+    color: var(--text-primary);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.form-input:focus,
+.form-textarea:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px var(--primary-color-alpha);
+}
+
+.form-textarea {
+    resize: vertical;
+    min-height: 80px;
+    font-family: inherit;
+}
+
+.form-input[required]:invalid {
+    border-color: var(--error-color);
+}
+
+.form-help {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    margin-top: 4px;
+}
+
+/* Checkbox Styles */
+.form-checkbox-group {
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.form-checkbox-label {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    cursor: pointer;
+    font-weight: normal;
+}
+
+.form-checkbox {
+    width: 18px;
+    height: 18px;
+    margin: 0;
+    cursor: pointer;
+    accent-color: var(--primary-color);
+}
+
+.form-checkbox-text {
+    font-size: 0.95rem;
+    color: var(--text-primary);
+    line-height: 1.4;
+}
+
+/* Button Styles */
+.btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.btn-primary {
+    background: var(--primary-color);
+    color: white;
+}
+
+.btn-primary:hover:not(:disabled) {
+    background: var(--primary-color-dark);
+    transform: translateY(-1px);
+}
+
+.btn-secondary {
+    background: var(--secondary-color);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+}
+
+.btn-secondary:hover:not(:disabled) {
+    background: var(--secondary-color-dark);
+    border-color: var(--border-color-dark);
+}
+
+.btn-success {
+    background: var(--success-color);
+    color: white;
+}
+
+.btn-success:hover:not(:disabled) {
+    background: var(--success-color-dark);
+    transform: translateY(-1px);
+}
+
+.btn-error {
+    background: var(--error-color);
+    color: white;
+}
+
+.btn-error:hover:not(:disabled) {
+    background: var(--error-color-dark);
+    transform: translateY(-1px);
+}
+
+.btn-small {
+    padding: 6px 12px;
+    font-size: 0.85rem;
+}
+
+/* Alerts */
+.alerts-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    max-width: 400px;
+}
+
+.alert {
+    padding: 16px 20px;
+    border-radius: 6px;
+    border-left: 4px solid;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    animation: slideInRight 0.3s ease;
+}
+
+.alert-info {
+    background: var(--info-background);
+    border-left-color: var(--info-color);
+    color: var(--info-text);
+}
+
+.alert-success {
+    background: var(--success-background);
+    border-left-color: var(--success-color);
+    color: var(--success-text);
+}
+
+.alert-warning {
+    background: var(--warning-background);
+    border-left-color: var(--warning-color);
+    color: var(--warning-text);
+}
+
+.alert-error {
+    background: var(--error-background);
+    border-left-color: var(--error-color);
+    color: var(--error-text);
+}
+
+.alert-content {
+    flex: 1;
+    line-height: 1.4;
+}
+
+.alert-close {
+    background: none;
+    border: none;
+    font-size: 1.2rem;
+    cursor: pointer;
+    color: inherit;
+    opacity: 0.7;
+    padding: 0;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.alert-close:hover {
+    opacity: 1;
+}
+
+@keyframes slideInRight {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .question-editor-content {
+        padding: 20px;
+        gap: 24px;
+    }
+
+    .question-editor-header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 16px;
+        padding: 16px 20px;
+    }
+
+    .question-editor-actions {
+        justify-content: stretch;
+    }
+
+    .question-editor-actions .btn {
+        flex: 1;
+    }
+
+    .question-type-selector {
+        grid-template-columns: 1fr;
+    }
+
+    .type-card {
+        padding: 16px;
+    }
+
+    .option-header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+    }
+
+    .option-actions {
+        justify-content: center;
+    }
+
+    .alerts-container {
+        position: fixed;
+        top: 10px;
+        left: 10px;
+        right: 10px;
+        max-width: none;
+    }
+}
+
+@media (max-width: 480px) {
+    .question-editor-content {
+        padding: 16px;
+        gap: 20px;
+    }
+
+    .question-editor-header h3 {
+        font-size: 1.2rem;
+    }
+
+    .type-card {
+        padding: 12px;
+        gap: 12px;
+    }
+
+    .type-icon {
+        font-size: 1.5rem;
+    }
+
+    .option-content {
+        padding: 12px;
+    }
+
+    .form-input,
+    .form-textarea {
+        padding: 10px 12px;
+    }
+
+    .btn {
+        padding: 12px 16px;
+    }
+
+    .btn-small {
+        padding: 8px 12px;
+    }
+}
+
+/* Dark theme adjustments */
+body.theme-dark .type-option input[type="radio"]:checked + .type-card {
+    background: rgba(37, 99, 235, 0.2);
+}
+
+/* Focus styles for accessibility */
+.type-option:focus-within .type-card {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
+}
+
+.form-input:focus,
+.form-textarea:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px var(--primary-color-alpha);
+}
+
+.form-checkbox:focus {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
+}
+
+/* Animation for smooth transitions */
+.question-options-section,
+.text-input-section {
+    transition: all 0.3s ease;
+}
+
+.option-item {
+    animation: slideInUp 0.3s ease-out;
+}
+
+@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Reduced motion preferences */
+@media (prefers-reduced-motion: reduce) {
+    .option-item {
+        animation: none;
+    }
+    
+    .question-options-section,
+    .text-input-section {
+        transition: none;
+    }
+    
+    * {
+        transition: none !important;
+    }
+}

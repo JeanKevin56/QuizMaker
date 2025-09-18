@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Results Display Demo</title>
+    <link rel="stylesheet" href="../styles/main.css">
+    <link rel="stylesheet" href="../styles/results.css">
+</head>
+<body>
+    <div class="demo-container">
+        <h1>Results Display Demo</h1>
+        
+        <div class="demo-controls">
+            <button id="showPerfectScore">Perfect Score (100%)</button>
+            <button id="showGoodScore">Good Score (85%)</button>
+            <button id="showAverageScore">Average Score (75%)</button>
+            <button id="showPoorScore">Poor Score (45%)</button>
+            <button id="showMixedAnswers">Mixed Answers</button>
+            <button id="showWithSkipped">With Skipped Questions</button>
+        </div>
+
+        <div id="results-container"></div>
+    </div>
+
+    <script type="module">
+        import { ResultsDisplay } from '../components/ResultsDisplay.js';
+        import { ScoringService } from '../services/ScoringService.js';
+        import { QUESTION_TYPES } from '../models/types.js';
+
+        const container = document.getElementById('results-container');
+        const mockStorageManager = { getUserId: () => 'demo-user-123' };
+        const resultsDisplay = new ResultsDisplay(container, mockStorageManager);
+        const scoringService = new ScoringService();
+
+        // Set up event handlers
+        resultsDisplay.setEventHandlers({
+            onRetakeQuiz: (quizId) => {
+                alert(`Retaking quiz: ${quizId}`);
+            },
+            onBackToDashboard: () => {
+                alert('Going back to dashboard');
+            },
+            onViewExplanation: (questionId) => {
+                alert(`Viewing explanation for question: ${questionId}`);
+            }
+        });
+
+        // Sample quiz data
+        const sampleQuiz = {
+            id: 'demo-quiz-12345678',
+            title: 'JavaScript Fundamentals Quiz',
+            description: 'Test your knowledge of JavaScript basics',
+            questions: [
+                {
+                    id: 'question-1',
+                    type: QUESTION_TYPES.MCQ_SINGLE,
+                    question: 'What is the correct way to declare a variable in JavaScript?',
+                    options: ['var x = 5;', 'variable x = 5;', 'v x = 5;', 'declare x = 5;'],
+                    correctAnswer: 0,
+                    explanation: 'The "var" keyword is used to declare variables in JavaScript.'
+                },
+                {
+                    id: 'question-2',
+                    type: QUESTION_TYPES.MCQ_MULTIPLE,
+                    question: 'Which of the following are JavaScript data types?',
+                    options: ['string', 'number', 'boolean', 'character'],
+                    correctAnswers: [0, 1, 2],
+                    explanation: 'JavaScript has string, number, and boolean as primitive data types. There is no character type.'
+                },
+                {
+                    id: 'question-3',
+                    type: QUESTION_TYPES.TEXT_INPUT,
+                    question: 'What method is used to add an element to the end of an array?',
+                    correctAnswer: 'push',
+                    caseSensitive: false,
+                    explanation: 'The push() method adds one or more elements to the end of an array.'
+                },
+                {
+                    id: 'question-4',
+                    type: QUESTION_TYPES.MCQ_SINGLE,
+                    question: 'Which operator is used for strict equality comparison?',
+                    options: ['==', '===', '=', '!='],
+                    correctAnswer: 1,
+                    explanation: 'The === operator performs strict equality comparison without type coercion.'
+                },
+                {
+                    id: 'question-5',
+                    type: QUESTION_TYPES.TEXT_INPUT,
+                    question: 'What keyword is used to define a function in JavaScript?',
+                    correctAnswer: 'function',
+                    caseSensitive: false,
+                    explanation: 'The "function" keyword is used to define functions in JavaScript.'
+                }
+            ]
+        };
+
+        // Demo scenarios
+        const scenarios = {
+            perfect: {
+                answers: new Map([
+                    ['question-1', 0],
+                    ['question-2', [0, 1, 2]],
+                    ['question-3', 'push'],
+                    ['question-4', 1],
+                    ['question-5', 'function']
+                ]),
+                validationResults: new Map([
+                    ['question-1', { isValid: true, isCorrect: true }],
+                    ['question-2', { isValid: true, isCorrect: true }],
+                    ['question-3', { isValid: true, isCorrect: true }],
+                    ['question-4', { isValid: true, isCorrect: true }],
+                    ['question-5', { isValid: true, isCorrect: true }]
+                ])
+            },
+            good: {
+                answers: new Map([
+                    ['question-1', 0],
+                    ['question-2', [0, 1, 2]],
+                    ['question-3', 'push'],
+                    ['question-4', 0], // Wrong
+                    ['question-5', 'function']
+                ]),
+                validationResults: new Map([
+                    ['question-1', { isValid: true, isCorrect: true }],
+                    ['question-2', { isValid: true, isCorrect: true }],
+                    ['question-3', { isValid: true, isCorrect: true }],
+                    ['question-4', { isValid: true, isCorrect: false }],
+                    ['question-5', { isValid: true, isCorrect: true }]
+                ])
+            },
+            average: {
+                answers: new Map([
+                    ['question-1', 0],
+                    ['question-2', [0, 1]], // Partial
+                    ['question-3', 'pop'], // Wrong
+                    ['question-4', 1],
+                    ['question-5', 'function']
+                ]),
+                validationResults: new Map([
+                    ['question-1', { isValid: true, isCorrect: true }],
+                    ['question-2', { isValid: true, isCorrect: false }],
+                    ['question-3', { isValid: true, isCorrect: false }],
+                    ['question-4', { isValid: true, isCorrect: true }],
+                    ['question-5', { isValid: true, isCorrect: true }]
+                ])
+            },
+            poor: {
+                answers: new Map([
+                    ['question-1', 1], // Wrong
+                    ['question-2', [3]], // Wrong
+                    ['question-3', 'pop'], // Wrong
+                    ['question-4', 0], // Wrong
+                    ['question-5', 'function']
+                ]),
+                validationResults: new Map([
+                    ['question-1', { isValid: true, isCorrect: false }],
+                    ['question-2', { isValid: true, isCorrect: false }],
+                    ['question-3', { isValid: true, isCorrect: false }],
+                    ['question-4', { isValid: true, isCorrect: false }],
+                    ['question-5', { isValid: true, isCorrect: true }]
+                ])
+            },
+            mixed: {
+                answers: new Map([
+                    ['question-1', 0],
+                    ['question-2', [0, 1, 2]],
+                    ['question-3', 'append'], // Wrong
+                    ['question-4', 0], // Wrong
+                    ['question-5', 'function']
+                ]),
+                validationResults: new Map([
+                    ['question-1', { isValid: true, isCorrect: true }],
+                    ['question-2', { isValid: true, isCorrect: true }],
+                    ['question-3', { isValid: true, isCorrect: false }],
+                    ['question-4', { isValid: true, isCorrect: false }],
+                    ['question-5', { isValid: true, isCorrect: true }]
+                ])
+            },
+            withSkipped: {
+                answers: new Map([
+                    ['question-1', 0],
+                    // question-2 skipped
+                    ['question-3', 'push'],
+                    ['question-4', 1],
+                    // question-5 skipped
+                ]),
+                validationResults: new Map([
+                    ['question-1', { isValid: true, isCorrect: true }],
+                    ['question-3', { isValid: true, isCorrect: true }],
+                    ['question-4', { isValid: true, isCorrect: true }]
+                ])
+            }
+        };
+
+        function generateTimestamps(answers) {
+            const timestamps = new Map();
+            const baseTime = Date.now() - 300000; // 5 minutes ago
+            let index = 0;
+            
+            for (const questionId of answers.keys()) {
+                timestamps.set(questionId, new Date(baseTime + (index * 60000))); // 1 minute apart
+                index++;
+            }
+            
+            return timestamps;
+        }
+
+        function showScenario(scenarioName) {
+            const scenario = scenarios[scenarioName];
+            const startTime = new Date(Date.now() - 300000); // 5 minutes ago
+            const endTime = new Date();
+            
+            const result = scoringService.calculateQuizResult(
+                sampleQuiz,
+                scenario.answers,
+                scenario.validationResults,
+                generateTimestamps(scenario.answers),
+                startTime,
+                endTime,
+                'demo-user-123'
+            );
+
+            resultsDisplay.displayResults(result, sampleQuiz);
+        }
+
+        // Event listeners for demo buttons
+        document.getElementById('showPerfectScore').addEventListener('click', () => {
+            showScenario('perfect');
+        });
+
+        document.getElementById('showGoodScore').addEventListener('click', () => {
+            showScenario('good');
+        });
+
+        document.getElementById('showAverageScore').addEventListener('click', () => {
+            showScenario('average');
+        });
+
+        document.getElementById('showPoorScore').addEventListener('click', () => {
+            showScenario('poor');
+        });
+
+        document.getElementById('showMixedAnswers').addEventListener('click', () => {
+            showScenario('mixed');
+        });
+
+        document.getElementById('showWithSkipped').addEventListener('click', () => {
+            showScenario('withSkipped');
+        });
+
+        // Show perfect score by default
+        showScenario('perfect');
+    </script>
+
+    <style>
+        .demo-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .demo-container > h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 30px;
+        }
+
+        .demo-controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .demo-controls button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            background: #3498db;
+            color: white;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: background 0.2s ease;
+        }
+
+        .demo-controls button:hover {
+            background: #2980b9;
+        }
+
+        @media (max-width: 768px) {
+            .demo-controls {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .demo-controls button {
+                width: 100%;
+                max-width: 300px;
+            }
+        }
+    </style>
+</body>
+</html>
