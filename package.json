@@ -6,8 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "build:prod": "NODE_ENV=production vite build && node scripts/build-optimize.js",
-    "build:deploy": "NODE_ENV=production vite build && node scripts/build-optimize.js",
+    "build:prod": "cross-env NODE_ENV=production vite build && node scripts/build-optimize.js",
+    "build:deploy": "cross-env NODE_ENV=production vite build && node scripts/build-optimize.js",
     "build:analyze": "vite build --mode analyze",
     "preview": "vite preview",
     "test": "vitest --run",
@@ -29,6 +29,7 @@
   "devDependencies": {
     "@vitejs/plugin-legacy": "^5.0.0",
     "eslint": "^8.0.0",
+    "cross-env": "^7.0.3",
     "gh-pages": "^6.0.0",
     "jsdom": "^27.0.0",
     "prettier": "^3.0.0",
