@@ -5,32 +5,39 @@
 
 import * as pdfjsLib from 'pdfjs-dist';
 
-// Configure PDF.js worker with CORS-safe approach
+/**
+ * Detects the appropriate worker path based on environment and availability
+ * @returns {string} - The worker path to use
+ */
+const detectWorkerPath = () => {
+    // Check if we're in a production environment (not localhost)
+    const isProduction = window.location.hostname !== 'localhost' && 
+                        window.location.hostname !== '127.0.0.1' && 
+                        !window.location.hostname.startsWith('192.168.') &&
+                        !window.location.hostname.includes('localhost');
+    
+    if (isProduction) {
+        // Priority 1: Local worker files (same origin)
+        const localWorkerPath = './assets/pdf/pdf.worker.min.js';
+        console.log('Production environment detected, using local worker path:', localWorkerPath);
+        return localWorkerPath;
+    } else {
+        // Development environment: use CDN workers
+        const cdnWorkerPath = 'https://unpkg.com/pdfjs-dist@4.0.379/build/pdf.worker.min.js';
+        console.log('Development environment detected, using CDN worker path:', cdnWorkerPath);
+        return cdnWorkerPath;
+    }
+};
+
+// Configure PDF.js worker with local worker path detection
 const configureWorker = () => {
     try {
-        // Check if we're in a deployed environment (not localhost)
-        const isDeployed = window.location.hostname !== 'localhost' && 
-                          window.location.hostname !== '127.0.0.1' && 
-                          !window.location.hostname.startsWith('192.168.') &&
-                          !window.location.hostname.includes('localhost');
+        // Get the appropriate worker path based on environment
+        const workerPath = detectWorkerPath();
         
-        if (isDeployed) {
-            // For deployed environments, disable worker to avoid CORS issues
-            // This makes PDF processing synchronous but avoids CORS problems
-            pdfjsLib.GlobalWorkerOptions.workerSrc = '';
-            console.log('PDF.js configured without worker for deployed environment (CORS-safe)');
-            return;
-        }
-        
-        // For development environments, try CDN workers
-        const workerSources = [
-            `https://unpkg.com/pdfjs-dist@4.0.379/build/pdf.worker.min.js`,
-            `https://cdn.jsdelivr.net/npm/pdfjs-dist@4.0.379/build/pdf.worker.min.js`,
-            `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.0.379/pdf.worker.min.js`
-        ];
-        
-        pdfjsLib.GlobalWorkerOptions.workerSrc = workerSources[0];
-        console.log('PDF.js configured with CDN worker for development');
+        // Set the worker source - actual testing will happen in initializeWorker()
+        pdfjsLib.GlobalWorkerOptions.workerSrc = workerPath;
+        console.log('PDF.js configured with initial worker source:', workerPath);
         
     } catch (error) {
         console.error('Failed to configure PDF.js worker:', error);
@@ -47,6 +54,14 @@ export class PDFProcessor {
         this.maxFileSize = 10 * 1024 * 1024; // 10MB limit
         this.supportedTypes = ['application/pdf'];
         this.workerInitialized = false;
+    }
+
+    /**
+     * Detects the appropriate worker path based on environment and availability
+     * @returns {string} - The worker path to use
+     */
+    detectWorkerPath() {
+        return detectWorkerPath();
     }
 
     /**
@@ -67,47 +82,49 @@ export class PDFProcessor {
                 return true;
             }
 
-            // If current config fails, try different approaches
-            const isDeployed = window.location.hostname !== 'localhost' && 
-                              window.location.hostname !== '127.0.0.1' && 
-                              !window.location.hostname.startsWith('192.168.') &&
-                              !window.location.hostname.includes('localhost');
+            // If current config fails, try fallback chain with priority order
+            const isProduction = window.location.hostname !== 'localhost' && 
+                                window.location.hostname !== '127.0.0.1' && 
+                                !window.location.hostname.startsWith('192.168.') &&
+                                !window.location.hostname.includes('localhost');
 
-            if (isDeployed) {
-                // For deployed environments, ensure worker is disabled
-                pdfjsLib.GlobalWorkerOptions.workerSrc = '';
-                console.log('PDF.js worker disabled for deployed environment');
-            } else {
-                // For development, try different CDN sources
-                const workerSources = [
-                    `https://unpkg.com/pdfjs-dist@4.0.379/build/pdf.worker.min.js`,
-                    `https://cdn.jsdelivr.net/npm/pdfjs-dist@4.0.379/build/pdf.worker.min.js`,
-                    `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.0.379/pdf.worker.min.js`,
+            let workerSources = [];
+            
+            if (isProduction) {
+                // Production: Local files first, then CDN fallbacks, then no worker
+                workerSources = [
+                    './assets/pdf/pdf.worker.min.js',  // Local worker (same origin)
+                    'https://unpkg.com/pdfjs-dist@4.0.379/build/pdf.worker.min.js',
+                    'https://cdn.jsdelivr.net/npm/pdfjs-dist@4.0.379/build/pdf.worker.min.js',
+                    'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.0.379/pdf.worker.min.js',
                     '' // Disable worker as last resort
                 ];
-
-                for (const workerSrc of workerSources) {
-                    try {
-                        pdfjsLib.GlobalWorkerOptions.workerSrc = workerSrc;
-                        
-                        const testResult = await this.testPdfProcessing();
-                        if (testResult) {
-                            console.log(`PDF.js initialized successfully with: ${workerSrc || 'no worker'}`);
-                            this.workerInitialized = true;
-                            return true;
-                        }
-                    } catch (error) {
-                        console.warn(`Failed to initialize PDF.js with ${workerSrc || 'no worker'}:`, error);
-                        continue;
-                    }
-                }
+            } else {
+                // Development: CDN workers first, then no worker
+                workerSources = [
+                    'https://unpkg.com/pdfjs-dist@4.0.379/build/pdf.worker.min.js',
+                    'https://cdn.jsdelivr.net/npm/pdfjs-dist@4.0.379/build/pdf.worker.min.js',
+                    'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.0.379/pdf.worker.min.js',
+                    '' // Disable worker as last resort
+                ];
             }
 
-            // Final test after configuration changes
-            const finalTest = await this.testPdfProcessing();
-            if (finalTest) {
-                this.workerInitialized = true;
-                return true;
+            // Try each worker source in priority order
+            for (const workerSrc of workerSources) {
+                try {
+                    pdfjsLib.GlobalWorkerOptions.workerSrc = workerSrc;
+                    console.log(`Attempting to initialize PDF.js with: ${workerSrc || 'no worker'}`);
+                    
+                    const testResult = await this.testPdfProcessing();
+                    if (testResult) {
+                        console.log(`PDF.js initialized successfully with: ${workerSrc || 'synchronous processing'}`);
+                        this.workerInitialized = true;
+                        return true;
+                    }
+                } catch (error) {
+                    console.warn(`Failed to initialize PDF.js with ${workerSrc || 'no worker'}:`, error);
+                    continue;
+                }
             }
 
             console.error('Failed to initialize PDF.js with any configuration');
